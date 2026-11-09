@@ -24,23 +24,26 @@ export function shuffle<T>(items: readonly T[]): T[] {
   return shuffled;
 }
 
-export function readSavedStudy(): SavedStudy {
+export function readSavedStudy(
+  cards: readonly Flashcard[] = flashcards,
+  storageKey = STORAGE_KEY,
+): SavedStudy {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = localStorage.getItem(storageKey);
     if (saved) {
       const parsed = JSON.parse(saved) as Partial<SavedStudy>;
       const review = Object.fromEntries(
         Object.entries(parsed.review ?? {}).filter(([id, status]) =>
-          flashcards.some((card) => card.id === id) && (status === 'learned' || status === 'practice'),
+          cards.some((card) => card.id === id) && (status === 'learned' || status === 'practice'),
         ),
       ) as ReviewState;
       const skipped = Array.isArray(parsed.skipped)
         ? [...new Set(parsed.skipped.filter((id) =>
-          typeof id === 'string' && flashcards.some((card) => card.id === id) && review[id] === undefined,
+          typeof id === 'string' && cards.some((card) => card.id === id) && review[id] === undefined,
         ))]
         : [];
       const currentIndex = typeof parsed.currentIndex === 'number' && Number.isInteger(parsed.currentIndex)
-        ? Math.max(0, Math.min(parsed.currentIndex, flashcards.length - 1))
+        ? Math.max(0, Math.min(parsed.currentIndex, cards.length - 1))
         : 0;
       return { currentIndex, review, skipped, mode: parsed.mode === 'quiz' ? 'quiz' : 'flashcards' };
     }

@@ -1,12 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, Check, ChevronDown, Layers, ListChecks, RotateCcw, Sparkles } from 'lucide-react';
 import { CategoryProgress } from './CategoryProgress';
-import { flashcards } from './gh300Deck';
+import { ai103Cards } from './ai103Deck';
+import { flashcards as gh300Cards } from './gh300Deck';
 import { QuizQuestion } from './QuizQuestion';
 import { getCardCategory, isAnswerCorrect, readSavedStudy, shuffle, STORAGE_KEY, type StudyMode } from './studySession';
 
 export default function App() {
-  const [study, setStudy] = useState(readSavedStudy);
+  const [selectedDeckId, setSelectedDeckId] = useState<'gh-300' | 'ai-103'>(() => (
+    localStorage.getItem('fieldnotes-selected-deck') === 'ai-103' ? 'ai-103' : 'gh-300'
+  ));
+  const flashcards = selectedDeckId === 'ai-103' ? ai103Cards : gh300Cards;
+  const studyStorageKey = selectedDeckId === 'ai-103' ? `${STORAGE_KEY}-ai-103` : STORAGE_KEY;
+  const examLabel = selectedDeckId === 'ai-103' ? 'AI-103' : 'GH-300';
+  const [study, setStudy] = useState(() => readSavedStudy(flashcards, studyStorageKey));
   const { currentIndex, review, skipped, mode } = study;
   const [quizSelections, setQuizSelections] = useState<string[]>([]);
   const [isRevealed, setIsRevealed] = useState(false);
@@ -58,8 +65,8 @@ export default function App() {
     if (focusRequest > 0) studyHeadingRef.current?.focus();
   }, [focusRequest]);
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(study));
-  }, [study]);
+    localStorage.setItem(studyStorageKey, JSON.stringify(study));
+  }, [study, studyStorageKey]);
 
   const learnedCount = Object.values(review).filter((status) => status === 'learned').length;
   const practiceCount = Object.values(review).filter((status) => status === 'practice').length;
@@ -110,6 +117,33 @@ export default function App() {
     setIsQuizComplete(false);
     setQuizSelections([]);
     setIsRevealed(false);
+  }
+
+  function changeDeck(nextDeckId: 'gh-300' | 'ai-103') {
+    if (nextDeckId === selectedDeckId) return;
+    const nextCards = nextDeckId === 'ai-103' ? ai103Cards : gh300Cards;
+    const nextStorageKey = nextDeckId === 'ai-103' ? `${STORAGE_KEY}-ai-103` : STORAGE_KEY;
+    const nextStudy = readSavedStudy(nextCards, nextStorageKey);
+    const nextQuizOrder = nextStudy.mode === 'quiz'
+      ? shuffle(nextCards.map((card) => card.id))
+      : [];
+    setSelectedDeckId(nextDeckId);
+    localStorage.setItem('fieldnotes-selected-deck', nextDeckId);
+    setStudy(nextStudy);
+    setQuizOrderIds(nextQuizOrder);
+    setQuizChoiceOrders(nextStudy.mode === 'quiz'
+      ? Object.fromEntries(nextCards.map((card) => [card.id, shuffle(card.choices)]))
+      : {});
+    setQuizCategory(null);
+    setQuizResults({});
+    setQuizSkippedIds([]);
+    setQuizSubmitted(false);
+    setIsQuizComplete(false);
+    setQuizSelections([]);
+    setIsRevealed(false);
+    setIsRevisitMode(false);
+    setRevisitCardIds([]);
+    setDragOffset(0);
   }
 
   function resetQuizSession() {
@@ -286,6 +320,16 @@ export default function App() {
           <span>fieldnotes</span>
         </a>
         <div className="flex items-center gap-[23px]">
+          <label className="sr-only" htmlFor="exam-deck">Certification exam</label>
+          <select
+            id="exam-deck"
+            className="min-h-11 cursor-pointer rounded-lg border border-line bg-white px-3 text-[12px] font-medium text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green"
+            value={selectedDeckId}
+            onChange={(event) => changeDeck(event.target.value as 'gh-300' | 'ai-103')}
+          >
+            <option value="gh-300">GH-300</option>
+            <option value="ai-103">AI-103</option>
+          </select>
           <span className="flex items-center gap-[9px] font-mono text-[10px] tracking-[.8px] text-[#696f65] max-[720px]:text-[8px]"><span className="size-[7px] rounded-full bg-[#80a568] shadow-[0_0_0_3px_#e6ecdf]" /> STUDY SESSION</span>
           <button className="grid size-11 cursor-pointer place-items-center rounded-xl border border-line bg-white text-muted transition-colors duration-200 hover:border-green hover:text-green" onClick={resetSession} aria-label="Reset study session" title="Reset session">
             <RotateCcw size={17} strokeWidth={1.8} />
@@ -342,8 +386,8 @@ export default function App() {
           <div className="mt-[46px] flex items-center gap-[11px] border-t border-line pt-[18px] max-[720px]:hidden">
             <div className="grid size-[31px] place-items-center bg-[#e9eee4] text-green"><Sparkles size={16} /></div>
             <div className="flex flex-1 flex-col gap-1">
-              <span className="text-[11px] font-semibold">GH-300 exam prep</span>
-              <span className="text-[10px] text-green-dark">Practice question bank</span>
+              <span className="text-[11px] font-semibold">{examLabel} exam prep</span>
+              <span className="text-[10px] text-green-dark">Original practice questions</span>
             </div>
             <span className="self-start font-mono text-[10px] text-green-dark">{String(flashcards.length).padStart(2, '0')}</span>
           </div>
@@ -554,6 +598,7 @@ export default function App() {
       </section>
 
       <CategoryProgress
+        cards={flashcards}
         review={review}
         skipped={skipped}
         onViewCard={viewStudyCard}
