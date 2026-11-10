@@ -19,8 +19,8 @@ Fix npm vulnerabilities safely: apply non-breaking fixes automatically, verify t
 
 ### 2. Assess
 
-1. Run the summary script from this skill's folder:
-   `npm audit --json | node <skill-folder>/scripts/summarize-audit.mjs`
+1. From the repository root, run the summary script at:
+   `npm audit --json | node .github/skills/npm-audit-fix/scripts/summarize-audit.mjs`
 2. Also check production-only impact: `npm audit --omit=dev`.
 3. Tell the user, briefly: how many vulnerabilities per severity, how many affect production, and how many can be fixed without breaking changes.
 
@@ -29,7 +29,6 @@ Fix npm vulnerabilities safely: apply non-breaking fixes automatically, verify t
 1. Run `npm audit fix` (no `--force`).
 2. Verify, using the scripts that exist in `package.json`:
    - `npm run build`
-   - `npm test` (with `-- --run` for Vitest, so it does not watch)
    - `npm run lint`
 3. If everything passes, commit: `chore(deps): npm audit fix`.
 
