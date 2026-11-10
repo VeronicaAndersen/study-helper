@@ -326,6 +326,9 @@ export default function App() {
             className="min-h-11 cursor-pointer rounded-lg border border-line bg-white px-3 text-[12px] font-medium text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green"
             value={selectedDeckId}
             onChange={(event) => changeDeck(event.target.value as 'gh-300' | 'ai-103')}
+            onKeyDown={(event) => {
+              if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') event.stopPropagation();
+            }}
           >
             <option value="gh-300">GH-300</option>
             <option value="ai-103">AI-103</option>
