@@ -24,8 +24,11 @@ const metricLabels: Record<CategoryProgressMetric, string> = {
 
 export function CategoryProgress({ cards, review, skipped, onViewCard, onStartQuiz }: CategoryProgressProps) {
   const [selectedProgress, setSelectedProgress] = useState<SelectedCategoryProgress | null>(null);
-  const categoryProgress = Array.from({ length: 6 }, (_, index) => {
-    const category = `T${index + 1}`;
+  const categories = Array.from(new Set(cards.flatMap((card) => {
+    const category = getCardCategory(card);
+    return category ? [category] : [];
+  }))).sort((left, right) => Number(left.slice(1)) - Number(right.slice(1)));
+  const categoryProgress = categories.map((category) => {
     const categoryCards = cards.filter((card) => getCardCategory(card) === category);
     const learned = categoryCards.filter((card) => review[card.id] === 'learned').length;
     const revisit = categoryCards.filter((card) => review[card.id] === 'practice').length;
@@ -71,7 +74,7 @@ export function CategoryProgress({ cards, review, skipped, onViewCard, onStartQu
         }}
       >
         <table className="w-full min-w-[680px] border-collapse text-right text-[13px] tabular-nums">
-          <caption className="sr-only">Study progress for categories T1 through T6. Reviewed includes learned and revisit cards; skipped is tracked separately.</caption>
+          <caption className="sr-only">Study progress for all available topics. Reviewed includes learned and revisit cards; skipped is tracked separately.</caption>
           <thead className="border-b border-line bg-[#f6f8fa] text-green-dark">
             <tr>
               <th scope="col" className="px-2 py-3 text-left font-medium">Category</th>

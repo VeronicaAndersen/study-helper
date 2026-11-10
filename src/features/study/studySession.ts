@@ -7,7 +7,7 @@ export type SavedStudy = { currentIndex: number; review: ReviewState; skipped: s
 export const STORAGE_KEY = 'fieldnotes-study-session';
 
 export function getCardCategory(card: Flashcard): string | undefined {
-  return card.question.match(/^(T[1-6])Q\d+\./)?.[1];
+  return card.question.match(/^(T\d+)Q\d+\./)?.[1];
 }
 
 export function isAnswerCorrect(card: Flashcard, selections: readonly string[]): boolean {
