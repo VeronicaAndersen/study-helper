@@ -1,12 +1,24 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, Check, ChevronDown, Layers, ListChecks, RotateCcw, Sparkles } from 'lucide-react';
 import { CategoryProgress } from './CategoryProgress';
-import { flashcards } from './gh300Deck';
+import { ai103Cards } from './ai103Deck';
+import { flashcards as gh300Cards } from './gh300Deck';
 import { QuizQuestion } from './QuizQuestion';
-import { getCardCategory, isAnswerCorrect, readSavedStudy, shuffle, STORAGE_KEY, type StudyMode } from './studySession';
+import { getCardCategory, isAnswerCorrect, readSavedStudy, shuffle, STORAGE_KEY, type SavedStudy, type StudyMode } from './studySession';
 
 export default function App() {
-  const [study, setStudy] = useState(readSavedStudy);
+  const [selectedDeckId, setSelectedDeckId] = useState<'gh-300' | 'ai-103'>(() => {
+    try {
+      return localStorage.getItem('fieldnotes-selected-deck') === 'ai-103' ? 'ai-103' : 'gh-300';
+    } catch {
+      return 'gh-300';
+    }
+  });
+  const flashcards = selectedDeckId === 'ai-103' ? ai103Cards : gh300Cards;
+  const studyStorageKey = selectedDeckId === 'ai-103' ? `${STORAGE_KEY}-ai-103` : STORAGE_KEY;
+  const examLabel = selectedDeckId === 'ai-103' ? 'AI-103' : 'GH-300';
+  const [study, setStudy] = useState(() => readSavedStudy(flashcards, studyStorageKey));
+  const studyByDeck = useRef<Partial<Record<'gh-300' | 'ai-103', SavedStudy>>>({});
   const { currentIndex, review, skipped, mode } = study;
   const [quizSelections, setQuizSelections] = useState<string[]>([]);
   const [isRevealed, setIsRevealed] = useState(false);
@@ -58,8 +70,12 @@ export default function App() {
     if (focusRequest > 0) studyHeadingRef.current?.focus();
   }, [focusRequest]);
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(study));
-  }, [study]);
+    try {
+      localStorage.setItem(studyStorageKey, JSON.stringify(study));
+    } catch {
+      // Keep studying in memory if browser storage is unavailable.
+    }
+  }, [study, studyStorageKey]);
 
   const learnedCount = Object.values(review).filter((status) => status === 'learned').length;
   const practiceCount = Object.values(review).filter((status) => status === 'practice').length;
@@ -110,6 +126,45 @@ export default function App() {
     setIsQuizComplete(false);
     setQuizSelections([]);
     setIsRevealed(false);
+  }
+
+  function changeDeck(nextDeckId: 'gh-300' | 'ai-103') {
+    if (nextDeckId === selectedDeckId) return;
+    studyByDeck.current[selectedDeckId] = study;
+    const nextCards = nextDeckId === 'ai-103' ? ai103Cards : gh300Cards;
+    const nextStorageKey = nextDeckId === 'ai-103' ? `${STORAGE_KEY}-ai-103` : STORAGE_KEY;
+    const nextStudy = studyByDeck.current[nextDeckId] ?? readSavedStudy(nextCards, nextStorageKey);
+    const nextQuizOrder = nextStudy.mode === 'quiz'
+      ? (() => {
+        const shuffledIds = shuffle(nextCards.map((card) => card.id));
+        const currentId = nextCards[nextStudy.currentIndex]?.id;
+        const currentPosition = shuffledIds.indexOf(currentId);
+        return currentPosition > 0
+          ? [...shuffledIds.slice(currentPosition), ...shuffledIds.slice(0, currentPosition)]
+          : shuffledIds;
+      })()
+      : [];
+    setSelectedDeckId(nextDeckId);
+    try {
+      localStorage.setItem('fieldnotes-selected-deck', nextDeckId);
+    } catch {
+      // Keep switching decks if the preference cannot be saved.
+    }
+    setStudy(nextStudy);
+    setQuizOrderIds(nextQuizOrder);
+    setQuizChoiceOrders(nextStudy.mode === 'quiz'
+      ? Object.fromEntries(nextCards.map((card) => [card.id, shuffle(card.choices)]))
+      : {});
+    setQuizCategory(null);
+    setQuizResults({});
+    setQuizSkippedIds([]);
+    setQuizSubmitted(false);
+    setIsQuizComplete(false);
+    setQuizSelections([]);
+    setIsRevealed(false);
+    setIsRevisitMode(false);
+    setRevisitCardIds([]);
+    setDragOffset(0);
   }
 
   function resetQuizSession() {
@@ -285,8 +340,21 @@ export default function App() {
           <span className="brand-mark relative grid size-[25px] rotate-[-32deg] place-items-center rounded-full border-[1.5px] border-green"><span /></span>
           <span>fieldnotes</span>
         </a>
-        <div className="flex items-center gap-[23px]">
-          <span className="flex items-center gap-[9px] font-mono text-[10px] tracking-[.8px] text-[#696f65] max-[720px]:text-[8px]"><span className="size-[7px] rounded-full bg-[#80a568] shadow-[0_0_0_3px_#e6ecdf]" /> STUDY SESSION</span>
+        <div className="flex items-center gap-[23px] max-[720px]:gap-2">
+          <label className="sr-only" htmlFor="exam-deck">Certification exam</label>
+          <select
+            id="exam-deck"
+            className="min-h-11 cursor-pointer rounded-lg border border-line bg-white px-3 text-[12px] font-medium text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green"
+            value={selectedDeckId}
+            onChange={(event) => changeDeck(event.target.value as 'gh-300' | 'ai-103')}
+            onKeyDown={(event) => {
+              if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') event.stopPropagation();
+            }}
+          >
+            <option value="gh-300">GH-300</option>
+            <option value="ai-103">AI-103</option>
+          </select>
+          <span className="flex items-center gap-[9px] font-mono text-[10px] tracking-[.8px] text-[#696f65] max-[720px]:hidden"><span className="size-[7px] rounded-full bg-[#80a568] shadow-[0_0_0_3px_#e6ecdf]" /> STUDY SESSION</span>
           <button className="grid size-11 cursor-pointer place-items-center rounded-xl border border-line bg-white text-muted transition-colors duration-200 hover:border-green hover:text-green" onClick={resetSession} aria-label="Reset study session" title="Reset session">
             <RotateCcw size={17} strokeWidth={1.8} />
           </button>
@@ -342,8 +410,8 @@ export default function App() {
           <div className="mt-[46px] flex items-center gap-[11px] border-t border-line pt-[18px] max-[720px]:hidden">
             <div className="grid size-[31px] place-items-center bg-[#e9eee4] text-green"><Sparkles size={16} /></div>
             <div className="flex flex-1 flex-col gap-1">
-              <span className="text-[11px] font-semibold">GH-300 exam prep</span>
-              <span className="text-[10px] text-green-dark">Practice question bank</span>
+              <span className="text-[11px] font-semibold">{examLabel} exam prep</span>
+              <span className="text-[10px] text-green-dark">Original practice questions</span>
             </div>
             <span className="self-start font-mono text-[10px] text-green-dark">{String(flashcards.length).padStart(2, '0')}</span>
           </div>
@@ -554,6 +622,7 @@ export default function App() {
       </section>
 
       <CategoryProgress
+        cards={flashcards}
         review={review}
         skipped={skipped}
         onViewCard={viewStudyCard}

@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { flashcards } from './gh300Deck';
+import type { Flashcard } from './gh300Deck';
 import { getCardCategory, type ReviewState } from './studySession';
 
 type CategoryProgressMetric = 'total' | 'learned' | 'revisit' | 'skipped' | 'unseen' | 'reviewed';
 type SelectedCategoryProgress = { category: string; metric: CategoryProgressMetric };
 
 interface CategoryProgressProps {
+  readonly cards: readonly Flashcard[];
   readonly review: ReviewState;
   readonly skipped: readonly string[];
   readonly onViewCard: (index: number) => void;
@@ -21,27 +22,27 @@ const metricLabels: Record<CategoryProgressMetric, string> = {
   reviewed: 'reviewed',
 };
 
-export function CategoryProgress({ review, skipped, onViewCard, onStartQuiz }: CategoryProgressProps) {
+export function CategoryProgress({ cards, review, skipped, onViewCard, onStartQuiz }: CategoryProgressProps) {
   const [selectedProgress, setSelectedProgress] = useState<SelectedCategoryProgress | null>(null);
   const categoryProgress = Array.from({ length: 6 }, (_, index) => {
     const category = `T${index + 1}`;
-    const cards = flashcards.filter((card) => getCardCategory(card) === category);
-    const learned = cards.filter((card) => review[card.id] === 'learned').length;
-    const revisit = cards.filter((card) => review[card.id] === 'practice').length;
-    const skippedCount = cards.filter((card) => skipped.includes(card.id)).length;
+    const categoryCards = cards.filter((card) => getCardCategory(card) === category);
+    const learned = categoryCards.filter((card) => review[card.id] === 'learned').length;
+    const revisit = categoryCards.filter((card) => review[card.id] === 'practice').length;
+    const skippedCount = categoryCards.filter((card) => skipped.includes(card.id)).length;
     const reviewed = learned + revisit;
     return {
       category,
-      total: cards.length,
+      total: categoryCards.length,
       learned,
       revisit,
       skipped: skippedCount,
-      unseen: cards.length - reviewed - skippedCount,
-      percent: cards.length > 0 ? Math.round((reviewed / cards.length) * 100) : 0,
+      unseen: categoryCards.length - reviewed - skippedCount,
+      percent: categoryCards.length > 0 ? Math.round((reviewed / categoryCards.length) * 100) : 0,
     };
   });
   const selectedQuestions = selectedProgress
-    ? flashcards.flatMap((card, index) => {
+    ? cards.flatMap((card, index) => {
       const status = review[card.id];
       const matchesMetric = selectedProgress.metric === 'total'
         || (selectedProgress.metric === 'learned' && status === 'learned')
