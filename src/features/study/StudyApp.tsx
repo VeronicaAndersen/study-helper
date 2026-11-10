@@ -7,9 +7,13 @@ import { QuizQuestion } from './QuizQuestion';
 import { getCardCategory, isAnswerCorrect, readSavedStudy, shuffle, STORAGE_KEY, type StudyMode } from './studySession';
 
 export default function App() {
-  const [selectedDeckId, setSelectedDeckId] = useState<'gh-300' | 'ai-103'>(() => (
-    localStorage.getItem('fieldnotes-selected-deck') === 'ai-103' ? 'ai-103' : 'gh-300'
-  ));
+  const [selectedDeckId, setSelectedDeckId] = useState<'gh-300' | 'ai-103'>(() => {
+    try {
+      return localStorage.getItem('fieldnotes-selected-deck') === 'ai-103' ? 'ai-103' : 'gh-300';
+    } catch {
+      return 'gh-300';
+    }
+  });
   const flashcards = selectedDeckId === 'ai-103' ? ai103Cards : gh300Cards;
   const studyStorageKey = selectedDeckId === 'ai-103' ? `${STORAGE_KEY}-ai-103` : STORAGE_KEY;
   const examLabel = selectedDeckId === 'ai-103' ? 'AI-103' : 'GH-300';
@@ -65,7 +69,11 @@ export default function App() {
     if (focusRequest > 0) studyHeadingRef.current?.focus();
   }, [focusRequest]);
   useEffect(() => {
-    localStorage.setItem(studyStorageKey, JSON.stringify(study));
+    try {
+      localStorage.setItem(studyStorageKey, JSON.stringify(study));
+    } catch {
+      // Keep studying in memory if browser storage is unavailable.
+    }
   }, [study, studyStorageKey]);
 
   const learnedCount = Object.values(review).filter((status) => status === 'learned').length;
@@ -135,7 +143,11 @@ export default function App() {
       })()
       : [];
     setSelectedDeckId(nextDeckId);
-    localStorage.setItem('fieldnotes-selected-deck', nextDeckId);
+    try {
+      localStorage.setItem('fieldnotes-selected-deck', nextDeckId);
+    } catch {
+      // Keep switching decks if the preference cannot be saved.
+    }
     setStudy(nextStudy);
     setQuizOrderIds(nextQuizOrder);
     setQuizChoiceOrders(nextStudy.mode === 'quiz'
@@ -326,7 +338,7 @@ export default function App() {
           <span className="brand-mark relative grid size-[25px] rotate-[-32deg] place-items-center rounded-full border-[1.5px] border-green"><span /></span>
           <span>fieldnotes</span>
         </a>
-        <div className="flex items-center gap-[23px]">
+        <div className="flex items-center gap-[23px] max-[720px]:gap-2">
           <label className="sr-only" htmlFor="exam-deck">Certification exam</label>
           <select
             id="exam-deck"
@@ -340,7 +352,7 @@ export default function App() {
             <option value="gh-300">GH-300</option>
             <option value="ai-103">AI-103</option>
           </select>
-          <span className="flex items-center gap-[9px] font-mono text-[10px] tracking-[.8px] text-[#696f65] max-[720px]:text-[8px]"><span className="size-[7px] rounded-full bg-[#80a568] shadow-[0_0_0_3px_#e6ecdf]" /> STUDY SESSION</span>
+          <span className="flex items-center gap-[9px] font-mono text-[10px] tracking-[.8px] text-[#696f65] max-[720px]:hidden"><span className="size-[7px] rounded-full bg-[#80a568] shadow-[0_0_0_3px_#e6ecdf]" /> STUDY SESSION</span>
           <button className="grid size-11 cursor-pointer place-items-center rounded-xl border border-line bg-white text-muted transition-colors duration-200 hover:border-green hover:text-green" onClick={resetSession} aria-label="Reset study session" title="Reset session">
             <RotateCcw size={17} strokeWidth={1.8} />
           </button>
