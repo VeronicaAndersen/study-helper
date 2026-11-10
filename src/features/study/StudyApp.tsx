@@ -4,7 +4,7 @@ import { CategoryProgress } from './CategoryProgress';
 import { ai103Cards } from './ai103Deck';
 import { flashcards as gh300Cards } from './gh300Deck';
 import { QuizQuestion } from './QuizQuestion';
-import { getCardCategory, isAnswerCorrect, readSavedStudy, shuffle, STORAGE_KEY, type StudyMode } from './studySession';
+import { getCardCategory, isAnswerCorrect, readSavedStudy, shuffle, STORAGE_KEY, type SavedStudy, type StudyMode } from './studySession';
 
 export default function App() {
   const [selectedDeckId, setSelectedDeckId] = useState<'gh-300' | 'ai-103'>(() => {
@@ -18,6 +18,7 @@ export default function App() {
   const studyStorageKey = selectedDeckId === 'ai-103' ? `${STORAGE_KEY}-ai-103` : STORAGE_KEY;
   const examLabel = selectedDeckId === 'ai-103' ? 'AI-103' : 'GH-300';
   const [study, setStudy] = useState(() => readSavedStudy(flashcards, studyStorageKey));
+  const studyByDeck = useRef<Partial<Record<'gh-300' | 'ai-103', SavedStudy>>>({});
   const { currentIndex, review, skipped, mode } = study;
   const [quizSelections, setQuizSelections] = useState<string[]>([]);
   const [isRevealed, setIsRevealed] = useState(false);
@@ -129,9 +130,10 @@ export default function App() {
 
   function changeDeck(nextDeckId: 'gh-300' | 'ai-103') {
     if (nextDeckId === selectedDeckId) return;
+    studyByDeck.current[selectedDeckId] = study;
     const nextCards = nextDeckId === 'ai-103' ? ai103Cards : gh300Cards;
     const nextStorageKey = nextDeckId === 'ai-103' ? `${STORAGE_KEY}-ai-103` : STORAGE_KEY;
-    const nextStudy = readSavedStudy(nextCards, nextStorageKey);
+    const nextStudy = studyByDeck.current[nextDeckId] ?? readSavedStudy(nextCards, nextStorageKey);
     const nextQuizOrder = nextStudy.mode === 'quiz'
       ? (() => {
         const shuffledIds = shuffle(nextCards.map((card) => card.id));
