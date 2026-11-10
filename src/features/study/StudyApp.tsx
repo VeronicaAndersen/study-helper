@@ -2,9 +2,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, Check, ChevronDown, Layers, ListChecks, RotateCcw, Sparkles } from 'lucide-react';
 import { CategoryProgress } from './CategoryProgress';
 import { ai103Cards } from './ai103Deck';
+import { cardBelongsToDomain, getExamBlueprint, type ExamId } from './examDomains';
 import { flashcards as gh300Cards } from './gh300Deck';
 import { QuizQuestion } from './QuizQuestion';
-import { getCardCategory, isAnswerCorrect, readSavedStudy, shuffle, STORAGE_KEY, type SavedStudy, type StudyMode } from './studySession';
+import { isAnswerCorrect, readSavedStudy, shuffle, STORAGE_KEY, type SavedStudy, type StudyMode } from './studySession';
 
 export default function App() {
   const [selectedDeckId, setSelectedDeckId] = useState<'gh-300' | 'ai-103'>(() => {
@@ -16,7 +17,9 @@ export default function App() {
   });
   const flashcards = selectedDeckId === 'ai-103' ? ai103Cards : gh300Cards;
   const studyStorageKey = selectedDeckId === 'ai-103' ? `${STORAGE_KEY}-ai-103` : STORAGE_KEY;
-  const examLabel = selectedDeckId === 'ai-103' ? 'AI-103' : 'GH-300';
+  const examLabel: ExamId = selectedDeckId === 'ai-103' ? 'AI-103' : 'GH-300';
+  const examBlueprint = getExamBlueprint(examLabel);
+  const studyDomains = examBlueprint.domains;
   const [study, setStudy] = useState(() => readSavedStudy(flashcards, studyStorageKey));
   const studyByDeck = useRef<Partial<Record<'gh-300' | 'ai-103', SavedStudy>>>({});
   const { currentIndex, review, skipped, mode } = study;
@@ -26,6 +29,7 @@ export default function App() {
   const [isRevisitMode, setIsRevisitMode] = useState(false);
   const [revisitCardIds, setRevisitCardIds] = useState<string[]>([]);
   const [quizCategory, setQuizCategory] = useState<string | null>(null);
+  const quizDomain = studyDomains.find((domain) => domain.id === quizCategory);
   const [quizOrderIds, setQuizOrderIds] = useState<string[]>(() => {
     if (study.mode !== 'quiz') return [];
     const shuffledIds = shuffle(flashcards.map((card) => card.id));
@@ -62,9 +66,9 @@ export default function App() {
           return card ? [card] : [];
         })
         : quizCategory
-          ? flashcards.filter((card) => getCardCategory(card) === quizCategory)
+          ? flashcards.filter((card) => quizDomain !== undefined && cardBelongsToDomain(card, quizDomain))
           : flashcards
-  ), [isRevisitMode, mode, quizCategory, quizOrderIds, revisitCardIds]);
+        ), [flashcards, isRevisitMode, mode, quizCategory, quizDomain, quizOrderIds, revisitCardIds]);
   const deckPosition = studyDeck.findIndex((card) => card.id === activeCard.id);
   useEffect(() => {
     if (focusRequest > 0) studyHeadingRef.current?.focus();
@@ -228,11 +232,11 @@ export default function App() {
     document.getElementById('study')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  function startCategoryQuiz(category: string) {
-    const categoryCards = flashcards.filter(
-      (card) => getCardCategory(card) === category,
-    );
-    startQuiz(categoryCards, category);
+  function startCategoryQuiz(domainId: string) {
+    const domain = studyDomains.find((item) => item.id === domainId);
+    if (!domain) return;
+    const domainCards = flashcards.filter((card) => cardBelongsToDomain(card, domain));
+    startQuiz(domainCards, domain.id);
   }
 
   function submitQuizAnswer(selections: string[]) {
@@ -455,7 +459,7 @@ export default function App() {
           <div className="mb-[19px] flex items-end justify-between max-[720px]:mb-[14px]">
             <div>
               <div className="font-mono text-[9px] tracking-[.8px] text-green-dark">CERTIFICATION REVIEW <span className="px-1 text-[#c9c8bd]">/</span> {activeCard.subject.toUpperCase()}</div>
-              <h2 ref={studyHeadingRef} tabIndex={-1} className="mt-2 text-[17px] font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green">{isRevisitMode ? 'Revisit' : quizCategory ? `${quizCategory} quiz` : mode === 'quiz' ? 'Quick quiz' : 'Quick study'} <span className="text-[#b6b9ad]">·</span> <b className="text-[13px] font-normal text-green-dark">{deckPosition + 1} of {studyDeck.length}</b></h2>
+              <h2 ref={studyHeadingRef} tabIndex={-1} className="mt-2 text-[17px] font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green">{isRevisitMode ? 'Revisit' : quizCategory ? `${quizDomain?.name ?? 'Domain'} quiz` : mode === 'quiz' ? 'Quick quiz' : 'Quick study'} <span className="text-[#b6b9ad]">·</span> <b className="text-[13px] font-normal text-green-dark">{deckPosition + 1} of {studyDeck.length}</b></h2>
             </div>
             <div className="flex items-baseline gap-[7px] font-mono text-[11px] text-[#adb0a5]" aria-label={`Card ${deckPosition + 1} of ${studyDeck.length}`}>
               <span className="text-[20px] text-green">{String(deckPosition + 1).padStart(2, '0')}</span>
@@ -583,7 +587,7 @@ export default function App() {
                 type="button"
                 onClick={() => startQuiz(
                   quizCategory
-                    ? flashcards.filter((card) => getCardCategory(card) === quizCategory)
+                    ? flashcards.filter((card) => quizDomain !== undefined && cardBelongsToDomain(card, quizDomain))
                     : flashcards,
                   quizCategory,
                 )}
@@ -622,7 +626,10 @@ export default function App() {
       </section>
 
       <CategoryProgress
+        key={selectedDeckId}
         cards={flashcards}
+        domains={studyDomains}
+        measuredAsOf={examBlueprint.measuredAsOf}
         review={review}
         skipped={skipped}
         onViewCard={viewStudyCard}
