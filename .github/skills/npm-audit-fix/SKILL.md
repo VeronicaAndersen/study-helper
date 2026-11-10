@@ -1,3 +1,8 @@
+---
+name: npm-audit-fix
+description: Safely assess and remediate npm audit vulnerabilities with non-breaking fixes, verification, and approval before breaking upgrades.
+---
+
 # npm audit fix
 
 Fix npm vulnerabilities safely: apply non-breaking fixes automatically, verify the project still works, and ask before anything that could break it.
