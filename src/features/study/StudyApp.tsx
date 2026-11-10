@@ -125,7 +125,14 @@ export default function App() {
     const nextStorageKey = nextDeckId === 'ai-103' ? `${STORAGE_KEY}-ai-103` : STORAGE_KEY;
     const nextStudy = readSavedStudy(nextCards, nextStorageKey);
     const nextQuizOrder = nextStudy.mode === 'quiz'
-      ? shuffle(nextCards.map((card) => card.id))
+      ? (() => {
+        const shuffledIds = shuffle(nextCards.map((card) => card.id));
+        const currentId = nextCards[nextStudy.currentIndex]?.id;
+        const currentPosition = shuffledIds.indexOf(currentId);
+        return currentPosition > 0
+          ? [...shuffledIds.slice(currentPosition), ...shuffledIds.slice(0, currentPosition)]
+          : shuffledIds;
+      })()
       : [];
     setSelectedDeckId(nextDeckId);
     localStorage.setItem('fieldnotes-selected-deck', nextDeckId);
