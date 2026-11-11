@@ -66,8 +66,8 @@ const sourceQuestions: SourceQuestion[] = [
   [`A5Q8. Retrieved chunks often cut tables in half, so answers miss key values. What is the best improvement?`, [`Use layout-aware extraction and chunking that keeps tables and sections intact`, `Make every chunk exactly 50 characters`, `Remove all tables from the documents`, `Increase the temperature`], [0]],
 ];
 
-export const ai103Cards: Flashcard[] = sourceQuestions.map(([question, choices, correctIndexes], index) => ({
-  id: `ai103-${String(index + 1).padStart(3, '0')}`,
+export const ai103Cards: Flashcard[] = sourceQuestions.map(([question, choices, correctIndexes]) => ({
+  id: `ai103-${question.slice(0, question.indexOf('.'))}`,
   subject: 'AI-103',
   question,
   choices,
