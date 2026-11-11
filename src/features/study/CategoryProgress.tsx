@@ -1,10 +1,14 @@
-import { useState } from 'react';
-import { cardBelongsToDomain, type ExamDomain } from './examDomains';
-import type { Flashcard } from './gh300Deck';
-import type { ReviewState } from './studySession';
+import { useState } from "react";
+import { cardBelongsToDomain, type ExamDomain } from "./examDomains";
+import type { Flashcard } from "./gh300Deck";
+import type { ReviewState } from "./studySession";
 
-type CategoryProgressMetric = 'total' | 'learned' | 'revisit' | 'skipped' | 'unseen' | 'reviewed';
-type SelectedDomainProgress = { domainId: string; metric: CategoryProgressMetric };
+type CategoryProgressMetric =
+  "total" | "learned" | "revisit" | "skipped" | "unseen" | "reviewed";
+type SelectedDomainProgress = {
+  domainId: string;
+  metric: CategoryProgressMetric;
+};
 
 interface CategoryProgressProps {
   readonly cards: readonly Flashcard[];
@@ -17,21 +21,38 @@ interface CategoryProgressProps {
 }
 
 const metricLabels: Record<CategoryProgressMetric, string> = {
-  total: 'all',
-  learned: 'learned',
-  revisit: 'to revisit',
-  skipped: 'skipped',
-  unseen: 'unseen',
-  reviewed: 'reviewed',
+  total: "all",
+  learned: "learned",
+  revisit: "to revisit",
+  skipped: "skipped",
+  unseen: "unseen",
+  reviewed: "reviewed",
 };
 
-export function CategoryProgress({ cards, domains, measuredAsOf, review, skipped, onViewCard, onStartQuiz }: CategoryProgressProps) {
-  const [selectedProgress, setSelectedProgress] = useState<SelectedDomainProgress | null>(null);
+export function CategoryProgress({
+  cards,
+  domains,
+  measuredAsOf,
+  review,
+  skipped,
+  onViewCard,
+  onStartQuiz,
+}: CategoryProgressProps) {
+  const [selectedProgress, setSelectedProgress] =
+    useState<SelectedDomainProgress | null>(null);
   const domainProgress = domains.map((domain) => {
-    const domainCards = cards.filter((card) => cardBelongsToDomain(card, domain));
-    const learned = domainCards.filter((card) => review[card.id] === 'learned').length;
-    const revisit = domainCards.filter((card) => review[card.id] === 'practice').length;
-    const skippedCount = domainCards.filter((card) => skipped.includes(card.id)).length;
+    const domainCards = cards.filter((card) =>
+      cardBelongsToDomain(card, domain),
+    );
+    const learned = domainCards.filter(
+      (card) => review[card.id] === "learned",
+    ).length;
+    const revisit = domainCards.filter(
+      (card) => review[card.id] === "practice",
+    ).length;
+    const skippedCount = domainCards.filter((card) =>
+      skipped.includes(card.id),
+    ).length;
     const reviewed = learned + revisit;
     return {
       domain,
@@ -40,31 +61,53 @@ export function CategoryProgress({ cards, domains, measuredAsOf, review, skipped
       revisit,
       skipped: skippedCount,
       unseen: domainCards.length - reviewed - skippedCount,
-      percent: domainCards.length > 0 ? Math.round((reviewed / domainCards.length) * 100) : 0,
+      percent:
+        domainCards.length > 0
+          ? Math.round((reviewed / domainCards.length) * 100)
+          : 0,
     };
   });
   const selectedDomain = selectedProgress
     ? domains.find((domain) => domain.id === selectedProgress.domainId)
     : undefined;
-  const selectedQuestions = selectedProgress && selectedDomain
-    ? cards.flatMap((card, index) => {
-      const status = review[card.id];
-      const matchesMetric = selectedProgress.metric === 'total'
-        || (selectedProgress.metric === 'learned' && status === 'learned')
-        || (selectedProgress.metric === 'revisit' && status === 'practice')
-        || (selectedProgress.metric === 'skipped' && skipped.includes(card.id))
-        || (selectedProgress.metric === 'unseen' && !status && !skipped.includes(card.id))
-        || (selectedProgress.metric === 'reviewed' && status !== undefined);
-      return cardBelongsToDomain(card, selectedDomain) && matchesMetric ? [{ card, index }] : [];
-    })
-    : [];
+  const selectedQuestions =
+    selectedProgress && selectedDomain
+      ? cards.flatMap((card, index) => {
+          const status = review[card.id];
+          const matchesMetric =
+            selectedProgress.metric === "total" ||
+            (selectedProgress.metric === "learned" && status === "learned") ||
+            (selectedProgress.metric === "revisit" && status === "practice") ||
+            (selectedProgress.metric === "skipped" &&
+              skipped.includes(card.id)) ||
+            (selectedProgress.metric === "unseen" &&
+              !status &&
+              !skipped.includes(card.id)) ||
+            (selectedProgress.metric === "reviewed" && status !== undefined);
+          return cardBelongsToDomain(card, selectedDomain) && matchesMetric
+            ? [{ card, index }]
+            : [];
+        })
+      : [];
 
   return (
-    <section className="mx-auto mb-10 max-w-[1100px] rounded-2xl border border-line bg-paper p-6 shadow-[0_4px_24px_#18252f04] max-[720px]:p-4" aria-labelledby="category-progress-heading">
+    <section
+      className="mx-auto mb-10 max-w-[1100px] rounded-2xl border border-line bg-paper p-6 shadow-[0_4px_24px_#18252f04] max-[720px]:p-4"
+      aria-labelledby="category-progress-heading"
+    >
       <div className="mb-5">
-        <h2 id="category-progress-heading" className="text-[18px] font-semibold tracking-[-.3px]">Progress by exam domain</h2>
-        <p className="mt-1 text-[13px] text-muted">Exam-domain weights measured as of {measuredAsOf}.</p>
-        <p className="mt-2 text-[12px] text-muted min-[721px]:hidden">Swipe the table to see all domains and quiz actions.</p>
+        <h2
+          id="category-progress-heading"
+          className="text-[18px] font-semibold tracking-[-.3px]"
+        >
+          Progress by exam domain
+        </h2>
+        <p className="mt-1 text-[13px] text-muted">
+          Exam-domain weights measured as of {measuredAsOf}.
+        </p>
+        <p className="mt-2 text-[12px] text-muted min-[721px]:hidden">
+          Swipe the table to see all domains and quiz actions.
+        </p>
       </div>
       <div
         className="overflow-x-auto rounded-xl border border-line"
@@ -72,87 +115,167 @@ export function CategoryProgress({ cards, domains, measuredAsOf, review, skipped
         aria-label="Exam-domain progress table"
         tabIndex={0}
         onKeyDown={(event) => {
-          if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') event.stopPropagation();
+          if (event.key === "ArrowLeft" || event.key === "ArrowRight")
+            event.stopPropagation();
         }}
       >
         <table className="w-full min-w-[980px] border-collapse text-right text-[13px] tabular-nums">
-          <caption className="sr-only">Study progress by exam domain. Overlapping topic mappings can count a question in more than one domain. Reviewed includes learned and revisit cards; skipped is tracked separately.</caption>
+          <caption className="sr-only">
+            Study progress by exam domain. Overlapping topic mappings can count
+            a question in more than one domain. Reviewed includes learned and
+            revisit cards; skipped is tracked separately.
+          </caption>
           <thead className="border-b border-line bg-[#f6f8fa] text-green-dark">
             <tr>
-              <th scope="col" className="min-w-[280px] px-2 py-3 text-left font-medium">Exam domain</th>
-              <th scope="col" className="whitespace-nowrap px-2 py-3 font-medium">Weight</th>
-              <th scope="col" className="px-2 py-3 font-medium">Total</th>
-              <th scope="col" className="px-2 py-3 font-medium">Learned</th>
-              <th scope="col" className="px-2 py-3 font-medium">Revisit</th>
-              <th scope="col" className="px-2 py-3 font-medium">Skipped</th>
-              <th scope="col" className="px-2 py-3 font-medium">Unseen</th>
-              <th scope="col" className="px-2 py-3 font-medium">Reviewed</th>
-              <th scope="col" className="px-2 py-3 text-left font-medium">Quiz</th>
+              <th
+                scope="col"
+                className="min-w-[280px] px-2 py-3 text-left font-medium"
+              >
+                Exam domain
+              </th>
+              <th
+                scope="col"
+                className="whitespace-nowrap px-2 py-3 font-medium"
+              >
+                Weight
+              </th>
+              <th scope="col" className="px-2 py-3 font-medium">
+                Total
+              </th>
+              <th scope="col" className="px-2 py-3 font-medium">
+                Learned
+              </th>
+              <th scope="col" className="px-2 py-3 font-medium">
+                Revisit
+              </th>
+              <th scope="col" className="px-2 py-3 font-medium">
+                Skipped
+              </th>
+              <th scope="col" className="px-2 py-3 font-medium">
+                Unseen
+              </th>
+              <th scope="col" className="px-2 py-3 font-medium">
+                Reviewed
+              </th>
+              <th scope="col" className="px-2 py-3 text-left font-medium">
+                Quiz
+              </th>
             </tr>
           </thead>
           <tbody>
-            {domainProgress.map(({ domain, total, learned, revisit, skipped: skippedCount, unseen, percent }) => {
-              const metrics: { metric: CategoryProgressMetric; count: number; text: string }[] = [
-                { metric: 'total', count: total, text: String(total) },
-                { metric: 'learned', count: learned, text: String(learned) },
-                { metric: 'revisit', count: revisit, text: String(revisit) },
-                { metric: 'skipped', count: skippedCount, text: String(skippedCount) },
-                { metric: 'unseen', count: unseen, text: String(unseen) },
-                { metric: 'reviewed', count: learned + revisit, text: `${percent}%` },
-              ];
-              return (
-                <tr key={domain.id} className="border-b border-line last:border-b-0 hover:bg-[#fafcfd]">
-                  <th scope="row" className="px-2 py-3 text-left font-medium">{domain.name}</th>
-                  <td className="whitespace-nowrap px-2 py-3">{domain.weight}</td>
-                  {metrics.map(({ metric, count, text }) => {
-                    const isSelected = selectedProgress?.domainId === domain.id
-                      && selectedProgress.metric === metric;
-                    const metricLabel = metricLabels[metric];
-                    return (
-                      <td className={`px-2 py-3 ${metric === 'learned' ? 'text-green-dark' : metric === 'revisit' ? 'text-[#a55847]' : metric === 'unseen' ? 'text-muted' : ''}`} key={metric}>
-                        <button
-                          className={`min-h-11 min-w-11 cursor-pointer rounded-lg border-0 px-2 text-inherit transition-colors hover:bg-[#edf5f3] hover:text-green-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green ${isSelected ? 'bg-[#e7f2ef] font-semibold text-green-dark' : 'bg-transparent'}`}
-                          type="button"
-                          aria-label={`View ${count} ${metricLabel} question${count === 1 ? '' : 's'} in ${domain.name}`}
-                          aria-expanded={isSelected}
-                          aria-controls="category-question-list"
-                          onClick={() => setSelectedProgress((current) =>
-                            current?.domainId === domain.id && current.metric === metric ? null : { domainId: domain.id, metric },
-                          )}
+            {domainProgress.map(
+              ({
+                domain,
+                total,
+                learned,
+                revisit,
+                skipped: skippedCount,
+                unseen,
+                percent,
+              }) => {
+                const metrics: {
+                  metric: CategoryProgressMetric;
+                  count: number;
+                  text: string;
+                }[] = [
+                  { metric: "total", count: total, text: String(total) },
+                  { metric: "learned", count: learned, text: String(learned) },
+                  { metric: "revisit", count: revisit, text: String(revisit) },
+                  {
+                    metric: "skipped",
+                    count: skippedCount,
+                    text: String(skippedCount),
+                  },
+                  { metric: "unseen", count: unseen, text: String(unseen) },
+                  {
+                    metric: "reviewed",
+                    count: learned + revisit,
+                    text: `${percent}%`,
+                  },
+                ];
+                return (
+                  <tr
+                    key={domain.id}
+                    className="border-b border-line last:border-b-0 hover:bg-[#fafcfd]"
+                  >
+                    <th scope="row" className="px-2 py-3 text-left font-medium">
+                      {domain.name}
+                    </th>
+                    <td className="whitespace-nowrap px-2 py-3">
+                      {domain.weight}
+                    </td>
+                    {metrics.map(({ metric, count, text }) => {
+                      const isSelected =
+                        selectedProgress?.domainId === domain.id &&
+                        selectedProgress.metric === metric;
+                      const metricLabel = metricLabels[metric];
+                      return (
+                        <td
+                          className={`px-2 py-3 ${metric === "learned" ? "text-green-dark" : metric === "revisit" ? "text-[#a55847]" : metric === "unseen" ? "text-muted" : ""}`}
+                          key={metric}
                         >
-                          {text}
-                        </button>
-                      </td>
-                    );
-                  })}
-                  <td className="px-2 py-3 text-left">
-                    <button
-                      className="min-h-11 cursor-pointer whitespace-nowrap rounded-lg border border-line bg-white px-3 text-[12px] font-medium text-green-dark hover:border-green focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green disabled:cursor-not-allowed disabled:text-muted"
-                      type="button"
-                      disabled={total === 0}
-                      onClick={() => onStartQuiz(domain.id)}
-                      aria-label={`Start quiz for ${domain.name}`}
-                    >
-                      Start quiz
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
+                          <button
+                            className={`min-h-11 min-w-11 cursor-pointer rounded-lg border-0 px-2 text-inherit transition-colors hover:bg-[#edf5f3] hover:text-green-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green ${isSelected ? "bg-[#e7f2ef] font-semibold text-green-dark" : "bg-transparent"}`}
+                            type="button"
+                            aria-label={`View ${count} ${metricLabel} question${count === 1 ? "" : "s"} in ${domain.name}`}
+                            aria-expanded={isSelected}
+                            aria-controls="category-question-list"
+                            onClick={() =>
+                              setSelectedProgress((current) =>
+                                current?.domainId === domain.id &&
+                                current.metric === metric
+                                  ? null
+                                  : { domainId: domain.id, metric },
+                              )
+                            }
+                          >
+                            {text}
+                          </button>
+                        </td>
+                      );
+                    })}
+                    <td className="px-2 py-3 text-left">
+                      <button
+                        className="min-h-11 cursor-pointer whitespace-nowrap rounded-lg border border-line bg-white px-3 text-[12px] font-medium text-green-dark hover:border-green focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green disabled:cursor-not-allowed disabled:text-muted"
+                        type="button"
+                        disabled={total === 0}
+                        onClick={() => onStartQuiz(domain.id)}
+                        aria-label={`Start quiz for ${domain.name}`}
+                      >
+                        Start quiz
+                      </button>
+                    </td>
+                  </tr>
+                );
+              },
+            )}
           </tbody>
         </table>
       </div>
       {selectedProgress && (
-        <div id="category-question-list" className="mt-5 rounded-xl border border-line p-4" aria-labelledby="category-question-heading">
-          <h3 id="category-question-heading" className="mb-3 text-[14px] font-semibold">
-            {selectedDomain?.name} · {metricLabels[selectedProgress.metric]} questions
+        <div
+          id="category-question-list"
+          className="mt-5 rounded-xl border border-line p-4"
+          aria-labelledby="category-question-heading"
+        >
+          <h3
+            id="category-question-heading"
+            className="mb-3 text-[14px] font-semibold"
+          >
+            {selectedDomain?.name} · {metricLabels[selectedProgress.metric]}{" "}
+            questions
           </h3>
           {selectedQuestions.length === 0 ? (
-            <p className="my-2 text-[11px] text-muted">No questions match this progress count yet.</p>
+            <p className="my-2 text-[11px] text-muted">
+              No questions match this progress count yet.
+            </p>
           ) : (
             <ul className="m-0 max-h-[280px] list-none overflow-y-auto p-0">
               {selectedQuestions.map(({ card, index }) => (
-                <li className="border-b border-line last:border-b-0" key={card.id}>
+                <li
+                  className="border-b border-line last:border-b-0"
+                  key={card.id}
+                >
                   <button
                     className="min-h-12 w-full cursor-pointer rounded-lg border-0 bg-transparent px-3 py-3 text-left text-[14px] leading-relaxed text-ink hover:bg-[#f6f8fa] focus-visible:outline focus-visible:outline-2 focus-visible:outline-green"
                     type="button"
