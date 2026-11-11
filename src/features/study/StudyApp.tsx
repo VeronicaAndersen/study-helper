@@ -7,6 +7,17 @@ import { flashcards as gh300Cards } from './gh300Deck';
 import { QuizQuestion } from './QuizQuestion';
 import { isAnswerCorrect, readSavedStudy, shuffle, STORAGE_KEY, type SavedStudy, type StudyMode } from './studySession';
 
+const AI103_STORAGE_KEY = `${STORAGE_KEY}-ai-103-v2`;
+const LEGACY_AI103_STORAGE_KEY = `${STORAGE_KEY}-ai-103`;
+
+function hasLegacyAI103Progress() {
+  try {
+    return localStorage.getItem(LEGACY_AI103_STORAGE_KEY) !== null;
+  } catch {
+    return false;
+  }
+}
+
 export default function App() {
   const [selectedDeckId, setSelectedDeckId] = useState<'gh-300' | 'ai-103'>(() => {
     try {
@@ -16,11 +27,14 @@ export default function App() {
     }
   });
   const flashcards = selectedDeckId === 'ai-103' ? ai103Cards : gh300Cards;
-  const studyStorageKey = selectedDeckId === 'ai-103' ? `${STORAGE_KEY}-ai-103` : STORAGE_KEY;
+  const studyStorageKey = selectedDeckId === 'ai-103' ? AI103_STORAGE_KEY : STORAGE_KEY;
   const examLabel: ExamId = selectedDeckId === 'ai-103' ? 'AI-103' : 'GH-300';
   const examBlueprint = getExamBlueprint(examLabel);
   const studyDomains = examBlueprint.domains;
   const [study, setStudy] = useState(() => readSavedStudy(flashcards, studyStorageKey));
+  const [hasPreviousAI103Progress, setHasPreviousAI103Progress] = useState(
+    () => selectedDeckId === 'ai-103' && hasLegacyAI103Progress(),
+  );
   const studyByDeck = useRef<Partial<Record<'gh-300' | 'ai-103', SavedStudy>>>({});
   const { currentIndex, review, skipped, mode } = study;
   const [quizSelections, setQuizSelections] = useState<string[]>([]);
@@ -136,7 +150,7 @@ export default function App() {
     if (nextDeckId === selectedDeckId) return;
     studyByDeck.current[selectedDeckId] = study;
     const nextCards = nextDeckId === 'ai-103' ? ai103Cards : gh300Cards;
-    const nextStorageKey = nextDeckId === 'ai-103' ? `${STORAGE_KEY}-ai-103` : STORAGE_KEY;
+    const nextStorageKey = nextDeckId === 'ai-103' ? AI103_STORAGE_KEY : STORAGE_KEY;
     const nextStudy = studyByDeck.current[nextDeckId] ?? readSavedStudy(nextCards, nextStorageKey);
     const nextQuizOrder = nextStudy.mode === 'quiz'
       ? (() => {
@@ -149,6 +163,7 @@ export default function App() {
       })()
       : [];
     setSelectedDeckId(nextDeckId);
+    setHasPreviousAI103Progress(nextDeckId === 'ai-103' && hasLegacyAI103Progress());
     try {
       localStorage.setItem('fieldnotes-selected-deck', nextDeckId);
     } catch {
@@ -364,6 +379,12 @@ export default function App() {
           </button>
         </div>
       </header>
+
+      {selectedDeckId === 'ai-103' && hasPreviousAI103Progress && (
+        <p className="mx-auto mt-4 max-w-[1100px] rounded-lg border border-[#e5d4a3] bg-[#fbf7e9] px-4 py-3 text-[12px] leading-relaxed text-ink" role="status">
+          The AI-103 question set has changed. Your previous saved session remains stored, but this updated set starts fresh.
+        </p>
+      )}
 
       <section className="mx-auto my-12 grid max-w-[1100px] grid-cols-[240px_minmax(0,1fr)] items-start gap-16 max-[960px]:grid-cols-[200px_minmax(0,1fr)] max-[960px]:gap-8 max-[720px]:my-6 max-[720px]:flex max-[720px]:flex-col max-[720px]:gap-6" id="study">
         <aside className="pt-[21px] max-[720px]:grid max-[720px]:w-full max-[720px]:grid-cols-1 max-[720px]:items-start max-[720px]:pt-0" aria-label="Study progress">
