@@ -44,7 +44,7 @@ When a saved session is loaded, entries for card IDs that no longer exist are dr
 
 ## Prerequisites
 
-- Node.js `^20.19.0` or `>=22.12.0` (required by Vite 8; the repo has no `.nvmrc` or `engines` field)
+- Node.js `^20.19.0 || ^22.13.0 || >=24` (required to satisfy both Vite 8 and ESLint 10; the repo has no `.nvmrc` or `engines` field)
 - npm (the repo uses `package-lock.json`)
 
 ## Setup and scripts
