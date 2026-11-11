@@ -22,7 +22,7 @@ applyTo: '**/*.{ts,tsx,js,jsx}'
 ### TypeScript and JavaScript
 
 - Use camelCase for variables and functions, and PascalCase for components and types.
-- Prefer `const`; use `let` only when reassignment is needed. End statements with semicolons and use single-quoted strings, consistent with the project style.
+- Prefer `const`; use `let` only when reassignment is needed. End statements with semicolons and use double-quoted strings, consistent with the project style.
 - Avoid `any`; use specific types and add explicit annotations when they improve clarity or catch errors.
 - Prefer `interface` for extendable object shapes and `type` for unions or other type expressions.
 - Keep functions focused. Use `async`/`await` when it makes asynchronous control flow clearer.
