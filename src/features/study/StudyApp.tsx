@@ -2,9 +2,21 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, Check, ChevronDown, Layers, ListChecks, RotateCcw, Sparkles } from 'lucide-react';
 import { CategoryProgress } from './CategoryProgress';
 import { ai103Cards } from './ai103Deck';
+import { cardBelongsToDomain, getExamBlueprint, type ExamId } from './examDomains';
 import { flashcards as gh300Cards } from './gh300Deck';
 import { QuizQuestion } from './QuizQuestion';
-import { getCardCategory, isAnswerCorrect, readSavedStudy, shuffle, STORAGE_KEY, type SavedStudy, type StudyMode } from './studySession';
+import { isAnswerCorrect, readSavedStudy, shuffle, STORAGE_KEY, type SavedStudy, type StudyMode } from './studySession';
+
+const AI103_STORAGE_KEY = `${STORAGE_KEY}-ai-103-v2`;
+const LEGACY_AI103_STORAGE_KEY = `${STORAGE_KEY}-ai-103`;
+
+function hasLegacyAI103Progress() {
+  try {
+    return localStorage.getItem(LEGACY_AI103_STORAGE_KEY) !== null;
+  } catch {
+    return false;
+  }
+}
 
 export default function App() {
   const [selectedDeckId, setSelectedDeckId] = useState<'gh-300' | 'ai-103'>(() => {
@@ -15,9 +27,14 @@ export default function App() {
     }
   });
   const flashcards = selectedDeckId === 'ai-103' ? ai103Cards : gh300Cards;
-  const studyStorageKey = selectedDeckId === 'ai-103' ? `${STORAGE_KEY}-ai-103` : STORAGE_KEY;
-  const examLabel = selectedDeckId === 'ai-103' ? 'AI-103' : 'GH-300';
+  const studyStorageKey = selectedDeckId === 'ai-103' ? AI103_STORAGE_KEY : STORAGE_KEY;
+  const examLabel: ExamId = selectedDeckId === 'ai-103' ? 'AI-103' : 'GH-300';
+  const examBlueprint = getExamBlueprint(examLabel);
+  const studyDomains = examBlueprint.domains;
   const [study, setStudy] = useState(() => readSavedStudy(flashcards, studyStorageKey));
+  const [hasPreviousAI103Progress, setHasPreviousAI103Progress] = useState(
+    () => selectedDeckId === 'ai-103' && hasLegacyAI103Progress(),
+  );
   const studyByDeck = useRef<Partial<Record<'gh-300' | 'ai-103', SavedStudy>>>({});
   const { currentIndex, review, skipped, mode } = study;
   const [quizSelections, setQuizSelections] = useState<string[]>([]);
@@ -26,6 +43,7 @@ export default function App() {
   const [isRevisitMode, setIsRevisitMode] = useState(false);
   const [revisitCardIds, setRevisitCardIds] = useState<string[]>([]);
   const [quizCategory, setQuizCategory] = useState<string | null>(null);
+  const quizDomain = studyDomains.find((domain) => domain.id === quizCategory);
   const [quizOrderIds, setQuizOrderIds] = useState<string[]>(() => {
     if (study.mode !== 'quiz') return [];
     const shuffledIds = shuffle(flashcards.map((card) => card.id));
@@ -62,9 +80,9 @@ export default function App() {
           return card ? [card] : [];
         })
         : quizCategory
-          ? flashcards.filter((card) => getCardCategory(card) === quizCategory)
+          ? flashcards.filter((card) => quizDomain !== undefined && cardBelongsToDomain(card, quizDomain))
           : flashcards
-  ), [isRevisitMode, mode, quizCategory, quizOrderIds, revisitCardIds]);
+        ), [flashcards, isRevisitMode, mode, quizCategory, quizDomain, quizOrderIds, revisitCardIds]);
   const deckPosition = studyDeck.findIndex((card) => card.id === activeCard.id);
   useEffect(() => {
     if (focusRequest > 0) studyHeadingRef.current?.focus();
@@ -132,7 +150,7 @@ export default function App() {
     if (nextDeckId === selectedDeckId) return;
     studyByDeck.current[selectedDeckId] = study;
     const nextCards = nextDeckId === 'ai-103' ? ai103Cards : gh300Cards;
-    const nextStorageKey = nextDeckId === 'ai-103' ? `${STORAGE_KEY}-ai-103` : STORAGE_KEY;
+    const nextStorageKey = nextDeckId === 'ai-103' ? AI103_STORAGE_KEY : STORAGE_KEY;
     const nextStudy = studyByDeck.current[nextDeckId] ?? readSavedStudy(nextCards, nextStorageKey);
     const nextQuizOrder = nextStudy.mode === 'quiz'
       ? (() => {
@@ -145,6 +163,7 @@ export default function App() {
       })()
       : [];
     setSelectedDeckId(nextDeckId);
+    setHasPreviousAI103Progress(nextDeckId === 'ai-103' && hasLegacyAI103Progress());
     try {
       localStorage.setItem('fieldnotes-selected-deck', nextDeckId);
     } catch {
@@ -228,11 +247,11 @@ export default function App() {
     document.getElementById('study')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  function startCategoryQuiz(category: string) {
-    const categoryCards = flashcards.filter(
-      (card) => getCardCategory(card) === category,
-    );
-    startQuiz(categoryCards, category);
+  function startCategoryQuiz(domainId: string) {
+    const domain = studyDomains.find((item) => item.id === domainId);
+    if (!domain) return;
+    const domainCards = flashcards.filter((card) => cardBelongsToDomain(card, domain));
+    startQuiz(domainCards, domain.id);
   }
 
   function submitQuizAnswer(selections: string[]) {
@@ -361,6 +380,12 @@ export default function App() {
         </div>
       </header>
 
+      {selectedDeckId === 'ai-103' && hasPreviousAI103Progress && (
+        <p className="mx-auto mt-4 max-w-[1100px] rounded-lg border border-[#e5d4a3] bg-[#fbf7e9] px-4 py-3 text-[12px] leading-relaxed text-ink" role="status">
+          The AI-103 question set has changed. Your previous saved session remains stored, but this updated set starts fresh.
+        </p>
+      )}
+
       <section className="mx-auto my-12 grid max-w-[1100px] grid-cols-[240px_minmax(0,1fr)] items-start gap-16 max-[960px]:grid-cols-[200px_minmax(0,1fr)] max-[960px]:gap-8 max-[720px]:my-6 max-[720px]:flex max-[720px]:flex-col max-[720px]:gap-6" id="study">
         <aside className="pt-[21px] max-[720px]:grid max-[720px]:w-full max-[720px]:grid-cols-1 max-[720px]:items-start max-[720px]:pt-0" aria-label="Study progress">
           <div className="flex items-center gap-[9px] whitespace-nowrap font-mono text-[9px] tracking-[.8px] text-green-dark max-[720px]:col-span-full"><span className="inline-block h-px w-5 bg-coral" /> YOUR STUDY DESK</div>
@@ -455,7 +480,7 @@ export default function App() {
           <div className="mb-[19px] flex items-end justify-between max-[720px]:mb-[14px]">
             <div>
               <div className="font-mono text-[9px] tracking-[.8px] text-green-dark">CERTIFICATION REVIEW <span className="px-1 text-[#c9c8bd]">/</span> {activeCard.subject.toUpperCase()}</div>
-              <h2 ref={studyHeadingRef} tabIndex={-1} className="mt-2 text-[17px] font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green">{isRevisitMode ? 'Revisit' : quizCategory ? `${quizCategory} quiz` : mode === 'quiz' ? 'Quick quiz' : 'Quick study'} <span className="text-[#b6b9ad]">·</span> <b className="text-[13px] font-normal text-green-dark">{deckPosition + 1} of {studyDeck.length}</b></h2>
+              <h2 ref={studyHeadingRef} tabIndex={-1} className="mt-2 text-[17px] font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green">{isRevisitMode ? 'Revisit' : quizCategory ? `${quizDomain?.name ?? 'Domain'} quiz` : mode === 'quiz' ? 'Quick quiz' : 'Quick study'} <span className="text-[#b6b9ad]">·</span> <b className="text-[13px] font-normal text-green-dark">{deckPosition + 1} of {studyDeck.length}</b></h2>
             </div>
             <div className="flex items-baseline gap-[7px] font-mono text-[11px] text-[#adb0a5]" aria-label={`Card ${deckPosition + 1} of ${studyDeck.length}`}>
               <span className="text-[20px] text-green">{String(deckPosition + 1).padStart(2, '0')}</span>
@@ -583,7 +608,7 @@ export default function App() {
                 type="button"
                 onClick={() => startQuiz(
                   quizCategory
-                    ? flashcards.filter((card) => getCardCategory(card) === quizCategory)
+                    ? flashcards.filter((card) => quizDomain !== undefined && cardBelongsToDomain(card, quizDomain))
                     : flashcards,
                   quizCategory,
                 )}
@@ -622,7 +647,10 @@ export default function App() {
       </section>
 
       <CategoryProgress
+        key={selectedDeckId}
         cards={flashcards}
+        domains={studyDomains}
+        measuredAsOf={examBlueprint.measuredAsOf}
         review={review}
         skipped={skipped}
         onViewCard={viewStudyCard}
