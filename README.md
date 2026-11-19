@@ -5,7 +5,7 @@ A React and TypeScript study app, branded "fieldnotes" in the UI, for Microsoft 
 | Deck                    | Questions | Source file                                       |
 | ----------------------- | --------- | ------------------------------------------------- |
 | GH-300 (GitHub Copilot) | 151       | [`gh300Deck.ts`](src/features/study/gh300Deck.ts) |
-| AI-103 (Azure AI)       | 50        | [`ai103Deck.ts`](src/features/study/ai103Deck.ts) |
+| AI-103 (Azure AI)       | 118       | [`ai103Deck.ts`](src/features/study/ai103Deck.ts) |
 
 The app runs entirely in the browser. It has no backend and no environment variables.
 
