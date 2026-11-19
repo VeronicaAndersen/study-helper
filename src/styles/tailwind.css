@@ -1,23 +1,72 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
+/*
+ * Theme tokens. Light values live here; dark values override the same
+ * variables below, so every utility (bg-paper, text-ink, ...) follows the
+ * active theme. data-theme on <html> is set by src/features/theme.
+ */
 @theme {
   --color-ink: #18252f;
   --color-muted: #647480;
-  --color-green: #147d70;
-  --color-green-dark: #105e54;
-  --color-coral: #bc5948;
+  --color-subtle: #6c7369;
+  --color-faint: #b6b9ad;
+  --color-green: #2f7d72;
+  --color-green-dark: #285f57;
+  --color-green-soft: #edf3e9;
+  --color-green-line: #b7c9b0;
+  --color-signal: #8aa37a;
+  --color-coral: #a35f50;
+  --color-coral-dark: #8c5246;
+  --color-coral-soft: #fbf1ed;
+  --color-coral-line: #e1b5a9;
+  --color-sand: #f4f3ec;
+  --color-sand-line: #d9d9cf;
+  --color-warn-soft: #fbf7e9;
+  --color-warn-line: #e5d4a3;
   --color-line: #e1e7eb;
   --color-paper: #ffffff;
+  --color-on-accent: #ffffff;
+  --color-canvas: #f6f8fa;
+  --color-track: #e9eef2;
+  --color-hover: #f3f6f8;
   --font-display: 'DM Sans', sans-serif;
   --font-mono: 'DM Mono', monospace;
   --font-sans: 'DM Sans', sans-serif;
 }
 
 @layer base {
+  :root[data-theme='dark'] {
+    color-scheme: dark;
+    --color-ink: #e6edf1;
+    --color-muted: #9aa8b2;
+    --color-subtle: #a3aaa0;
+    --color-faint: #5d655f;
+    --color-green: #5aa89b;
+    --color-green-dark: #8cc4ba;
+    --color-green-soft: #16302b;
+    --color-green-line: #2e5b51;
+    --color-signal: #93b07f;
+    --color-coral: #d08b7c;
+    --color-coral-dark: #e2a99c;
+    --color-coral-soft: #36201b;
+    --color-coral-line: #6e3a2f;
+    --color-sand: #24292a;
+    --color-sand-line: #3a4142;
+    --color-warn-soft: #2f2a19;
+    --color-warn-line: #6b5a2a;
+    --color-line: #2b353d;
+    --color-paper: #161d23;
+    --color-on-accent: #0f1418;
+    --color-canvas: #0f1418;
+    --color-track: #222b32;
+    --color-hover: #1d262d;
+  }
+
   :root {
+    color-scheme: light;
     color: var(--color-ink);
-    background: #f6f8fa;
+    background: var(--color-canvas);
     font-family: 'DM Sans', sans-serif;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
@@ -82,7 +131,7 @@
     border-radius: 10px;
     background: var(--color-green);
     padding: 10px 20px;
-    color: white;
+    color: var(--color-on-accent);
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
@@ -92,7 +141,7 @@
   .primary-action:hover:enabled { background: var(--color-green-dark); }
   .primary-action:disabled {
     border-color: var(--color-line);
-    background: #edf1f4;
+    background: var(--color-track);
     color: var(--color-muted);
     cursor: not-allowed;
   }

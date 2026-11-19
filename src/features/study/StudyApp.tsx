@@ -9,6 +9,7 @@ import {
   RotateCcw,
   Sparkles,
 } from "lucide-react";
+import { ThemeToggle } from "../theme/ThemeToggle";
 import { CategoryProgress } from "./CategoryProgress";
 import { ai103Cards } from "./ai103Deck";
 import {
@@ -482,7 +483,7 @@ export default function App() {
           </label>
           <select
             id="exam-deck"
-            className="min-h-11 cursor-pointer rounded-lg border border-line bg-white px-3 text-[12px] font-medium text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green"
+            className="min-h-11 cursor-pointer rounded-lg border border-line bg-paper px-3 text-[12px] font-medium text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green"
             value={selectedDeckId}
             onChange={(event) =>
               changeDeck(event.target.value as "gh-300" | "ai-103")
@@ -495,12 +496,13 @@ export default function App() {
             <option value="gh-300">GH-300</option>
             <option value="ai-103">AI-103</option>
           </select>
-          <span className="flex items-center gap-[9px] font-mono text-[10px] tracking-[.8px] text-[#696f65] max-[720px]:hidden">
-            <span className="size-[7px] rounded-full bg-[#80a568] shadow-[0_0_0_3px_#e6ecdf]" />{" "}
+          <span className="flex items-center gap-[9px] font-mono text-[10px] tracking-[.8px] text-subtle max-[720px]:hidden">
+            <span className="size-[7px] rounded-full bg-signal shadow-[0_0_0_3px_var(--color-green-soft)]" />{" "}
             STUDY SESSION
           </span>
+          <ThemeToggle />
           <button
-            className="grid size-11 cursor-pointer place-items-center rounded-xl border border-line bg-white text-muted transition-colors duration-200 hover:border-green hover:text-green"
+            className="grid size-11 cursor-pointer place-items-center rounded-xl border border-line bg-paper text-muted transition-colors duration-200 hover:border-green hover:text-green"
             onClick={resetSession}
             aria-label="Reset study session"
             title="Reset session"
@@ -512,7 +514,7 @@ export default function App() {
 
       {selectedDeckId === "ai-103" && hasPreviousAI103Progress && (
         <p
-          className="mx-auto mt-4 max-w-[1100px] rounded-lg border border-[#e5d4a3] bg-[#fbf7e9] px-4 py-3 text-[12px] leading-relaxed text-ink"
+          className="mx-auto mt-4 max-w-[1100px] rounded-lg border border-warn-line bg-warn-soft px-4 py-3 text-[12px] leading-relaxed text-ink"
           role="status"
         >
           The AI-103 question set has changed. Your previous saved session
@@ -541,7 +543,7 @@ export default function App() {
           </p>
 
           <div className="mt-[60px] border-t border-line pt-[17px] max-[720px]:col-span-full max-[720px]:ml-0 max-[720px]:mt-4 max-[720px]:w-full max-[720px]:pt-3">
-            <div className="flex justify-between font-mono text-[9px] tracking-[.8px] text-[#70766c] max-[720px]:text-[8px]">
+            <div className="flex justify-between font-mono text-[9px] tracking-[.8px] text-subtle max-[720px]:text-[8px]">
               <span>SESSION PROGRESS</span>
               <span className="text-green">
                 {reviewedCount + skipped.length}
@@ -549,7 +551,7 @@ export default function App() {
               </span>
             </div>
             <div
-              className="mt-3 h-2 overflow-hidden rounded-full bg-[#e7edf1]"
+              className="mt-3 h-2 overflow-hidden rounded-full bg-track"
               role="progressbar"
               aria-label="Session progress"
               aria-valuenow={Math.round(progress)}
@@ -596,7 +598,7 @@ export default function App() {
                     (card, index) =>
                       review[card.id] === "practice" && (
                         <button
-                          className="flex w-full cursor-pointer flex-col items-start gap-1 border-0 border-b border-line bg-transparent px-1 py-[10px] text-left last:border-b-0 hover:bg-[#f5f5ee] focus-visible:outline focus-visible:outline-2 focus-visible:outline-green"
+                          className="flex w-full cursor-pointer flex-col items-start gap-1 border-0 border-b border-line bg-transparent px-1 py-[10px] text-left last:border-b-0 hover:bg-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-green"
                           key={card.id}
                           type="button"
                           onClick={() => viewRevisitCard(index)}
@@ -616,7 +618,7 @@ export default function App() {
           </div>
 
           <div className="mt-[46px] flex items-center gap-[11px] border-t border-line pt-[18px] max-[720px]:hidden">
-            <div className="grid size-[31px] place-items-center bg-[#e9eee4] text-green">
+            <div className="grid size-[31px] place-items-center bg-green-soft text-green">
               <Sparkles size={16} />
             </div>
             <div className="flex flex-1 flex-col gap-1">
@@ -636,7 +638,7 @@ export default function App() {
         <section className="min-w-0 w-full" aria-label="Flashcard study area">
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
             <div
-              className="flex w-fit gap-1 rounded-xl bg-[#e9eef2] p-1"
+              className="flex w-fit gap-1 rounded-xl bg-track p-1"
               role="tablist"
               aria-label="Study mode"
             >
@@ -659,7 +661,7 @@ export default function App() {
             </div>
             {(isRevisitMode || quizCategory) && (
               <button
-                className="inline-flex min-h-11 cursor-pointer items-center gap-1 rounded-lg border border-line bg-white px-3 py-2 text-[12px] text-green-dark hover:text-green-dark"
+                className="inline-flex min-h-11 cursor-pointer items-center gap-1 rounded-lg border border-line bg-paper px-3 py-2 text-[12px] text-green-dark hover:text-green-dark"
                 type="button"
                 onClick={() => {
                   if (quizCategory && !isRevisitMode) {
@@ -685,8 +687,7 @@ export default function App() {
           <div className="mb-[19px] flex items-end justify-between max-[720px]:mb-[14px]">
             <div>
               <div className="font-mono text-[9px] tracking-[.8px] text-green-dark">
-                CERTIFICATION REVIEW{" "}
-                <span className="px-1 text-[#c9c8bd]">/</span>{" "}
+                CERTIFICATION REVIEW <span className="px-1 text-faint">/</span>{" "}
                 {activeCard.subject.toUpperCase()}
               </div>
               <h2
@@ -701,32 +702,32 @@ export default function App() {
                     : mode === "quiz"
                       ? "Quick quiz"
                       : "Quick study"}{" "}
-                <span className="text-[#b6b9ad]">·</span>{" "}
+                <span className="text-faint">·</span>{" "}
                 <b className="text-[13px] font-normal text-green-dark">
                   {deckPosition + 1} of {studyDeck.length}
                 </b>
               </h2>
             </div>
             <div
-              className="flex items-baseline gap-[7px] font-mono text-[11px] text-[#adb0a5]"
+              className="flex items-baseline gap-[7px] font-mono text-[11px] text-faint"
               aria-label={`Card ${deckPosition + 1} of ${studyDeck.length}`}
             >
               <span className="text-[20px] text-green">
                 {String(deckPosition + 1).padStart(2, "0")}
               </span>
-              <span className="text-[#d0d1c8]">/</span>
+              <span className="text-faint">/</span>
               <span>{String(studyDeck.length).padStart(2, "0")}</span>
             </div>
           </div>
 
           {mode === "quiz" && !isQuizComplete && (
             <div className="mb-4" aria-label="Quiz progress">
-              <div className="mb-2 flex justify-between font-mono text-[9px] text-[#777e72]">
+              <div className="mb-2 flex justify-between font-mono text-[9px] text-subtle">
                 <span>{quizAttemptedCount} answered</span>
                 <span>{quizRemainingCount} remaining</span>
               </div>
               <div
-                className="h-2 overflow-hidden rounded-full bg-[#e7edf1]"
+                className="h-2 overflow-hidden rounded-full bg-track"
                 role="progressbar"
                 aria-label="Quiz progress"
                 aria-valuenow={Math.round(
@@ -779,7 +780,7 @@ export default function App() {
               }
               aria-live="polite"
             >
-              <div className="flex items-center justify-between border-b border-[#efeee8] pb-[17px]">
+              <div className="flex items-center justify-between border-b border-line pb-[17px]">
                 <span className="font-mono text-[9px] tracking-[.8px] text-green">
                   {mode === "quiz"
                     ? "QUESTION"
@@ -787,7 +788,7 @@ export default function App() {
                       ? "THE ANSWER"
                       : "QUESTION"}
                 </span>
-                <span className="bg-[#f4f3ec] px-[9px] py-[5px] text-[9px] text-green-dark">
+                <span className="bg-sand px-[9px] py-[5px] text-[9px] text-green-dark">
                   {activeCard.subject}
                 </span>
               </div>
@@ -840,7 +841,7 @@ export default function App() {
                     <div className="flex flex-col gap-3">
                       {activeCard.answers.map((answer) => (
                         <div
-                          className="flex items-start gap-3 rounded-xl border border-line bg-[#f6faf9] p-4"
+                          className="flex items-start gap-3 rounded-xl border border-line bg-green-soft p-4"
                           key={answer}
                         >
                           <span className="choice-letter border-green text-green-dark">
@@ -855,7 +856,7 @@ export default function App() {
                       ))}
                     </div>
                     {activeCard.explanation && (
-                      <p className="m-0 max-w-[410px] text-[12px] leading-[1.65] text-[#72786f]">
+                      <p className="m-0 max-w-[410px] text-[12px] leading-[1.65] text-subtle">
                         {activeCard.explanation}
                       </p>
                     )}
@@ -898,7 +899,7 @@ export default function App() {
               className="mt-4 flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-line bg-paper px-6 py-10 text-center shadow-[0_4px_24px_#18252f06]"
               aria-live="polite"
             >
-              <span className="grid size-[42px] place-items-center rounded-full bg-[#e9f0e5] text-green">
+              <span className="grid size-[42px] place-items-center rounded-full bg-green-soft text-green">
                 <Check size={23} />
               </span>
               <h3 className="mb-1 mt-4 font-display text-[27px] font-semibold">
@@ -938,7 +939,7 @@ export default function App() {
             <>
               <div className="mt-[25px] flex items-center justify-center gap-[15px] max-[720px]:mt-[22px] max-[720px]:gap-2">
                 <button
-                  className="flex min-h-12 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl border border-line bg-white px-3 text-[13px] font-medium text-muted transition-colors hover:border-coral hover:text-coral"
+                  className="flex min-h-12 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl border border-line bg-paper px-3 text-[13px] font-medium text-muted transition-colors hover:border-coral hover:text-coral"
                   onClick={() => moveCard("practice")}
                 >
                   <RotateCcw size={16} />
@@ -983,7 +984,7 @@ export default function App() {
                   <ArrowRight size={15} />
                 </button>
                 <button
-                  className="min-h-11 cursor-pointer rounded-lg border-0 bg-transparent px-4 text-[13px] text-muted hover:bg-[#e9eef2] disabled:cursor-default disabled:opacity-50"
+                  className="min-h-11 cursor-pointer rounded-lg border-0 bg-transparent px-4 text-[13px] text-muted hover:bg-track disabled:cursor-default disabled:opacity-50"
                   disabled={quizSubmitted}
                   onClick={skipQuizQuestion}
                 >
