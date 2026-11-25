@@ -1,7 +1,7 @@
 import type { Flashcard } from "./gh300Deck";
 import { getQuestionTopic } from "./studySession";
 
-export type ExamId = "GH-300" | "AI-103";
+export type ExamId = "GH-300" | "AI-103" | "GH-600";
 
 export interface ExamDomain {
   readonly id: string;
@@ -198,6 +198,47 @@ const examBlueprints: Record<ExamId, ExamBlueprint> = {
       },
     ],
   },
+  "GH-600": {
+    measuredAsOf: "4 May 2026",
+    domains: [
+      {
+        id: "gh600-tools",
+        name: "Implement tool use and environment interaction",
+        weight: "20-25%",
+        topics: ["G2"],
+      },
+      {
+        id: "gh600-architecture",
+        name: "Prepare agent architecture and SDLC processes",
+        weight: "15-20%",
+        topics: ["G1"],
+      },
+      {
+        id: "gh600-evaluation",
+        name: "Perform evaluation, error analysis, and tuning",
+        weight: "15-20%",
+        topics: ["G4"],
+      },
+      {
+        id: "gh600-multi-agent",
+        name: "Orchestrate multi-agent coordination",
+        weight: "15-20%",
+        topics: ["G5"],
+      },
+      {
+        id: "gh600-memory",
+        name: "Manage memory, state, and execution",
+        weight: "10-15%",
+        topics: ["G3"],
+      },
+      {
+        id: "gh600-guardrails",
+        name: "Implement guardrails and accountability",
+        weight: "10-15%",
+        topics: ["G6"],
+      },
+    ],
+  },
 };
 
 export function getExamBlueprint(examId: ExamId): ExamBlueprint {
@@ -208,7 +249,7 @@ export function cardBelongsToDomain(
   card: Flashcard,
   domain: ExamDomain,
 ): boolean {
-  const questionId = card.question.match(/^([TA]\d+Q\d+)\./)?.[1];
+  const questionId = card.question.match(/^([A-Z]\d+Q\d+)\./)?.[1];
   if (questionId !== undefined) {
     const explicitlyMappedDomains =
       examBlueprints[card.subject as ExamId]?.domains.filter((candidate) =>
