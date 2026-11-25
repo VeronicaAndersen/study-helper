@@ -6,12 +6,13 @@ A React and TypeScript study app, branded "fieldnotes" in the UI, for Microsoft 
 | ----------------------- | --------- | ------------------------------------------------- |
 | GH-300 (GitHub Copilot) | 151       | [`gh300Deck.ts`](src/features/study/gh300Deck.ts) |
 | AI-103 (Azure AI)       | 118       | [`ai103Deck.ts`](src/features/study/ai103Deck.ts) |
+| GH-600 (Agentic AI)     | 69        | [`gh600Deck.ts`](src/features/study/gh600Deck.ts) |
 
 The app runs entirely in the browser. It has no backend and no environment variables.
 
 ## Features
 
-- **Deck selector:** switch between GH-300 and AI-103 from the header. Each deck keeps its own saved session.
+- **Deck selector:** switch between GH-300, AI-103 and GH-600 from the header. Each deck keeps its own saved session.
 - **Flashcards:** study the question and its non-interactive choices. Click the card, or press Enter or Space while it is focused, to reveal the correct answer with its option letter. Click again or press Escape to hide it. Mark the card as **Got it** or **Needs practice**, swipe the revealed card right (learned) or left (needs practice), or use the Right arrow (learned, after revealing) and Left arrow (needs practice) keys.
 - **Quiz:** questions and answer choices are shuffled. Single-answer questions are graded as soon as you pick a choice. For multi-select questions, select your answers and click **Check answer**. Selections stay neutral until you submit, then answers are locked. You can skip a question. A summary appears when the quiz is complete. Quiz answers also update review progress: a correct answer marks the card as learned and a wrong answer marks it as needing practice.
 - **Revisit list:** cards marked as needing practice are listed in the sidebar. Open one to study only those cards.
@@ -28,7 +29,8 @@ Progress is stored in the browser's `localStorage`. If storage is unavailable, t
 | ------------------------------------ | ------------------------------------------------------------------- |
 | `fieldnotes-study-session`           | GH-300 session: current card, review status, skipped cards and mode |
 | `fieldnotes-study-session-ai-103-v2` | AI-103 session, same shape                                          |
-| `fieldnotes-selected-deck`           | Last selected deck (`gh-300` or `ai-103`)                           |
+| `fieldnotes-study-session-gh-600`    | GH-600 session, same shape                                          |
+| `fieldnotes-selected-deck`           | Last selected deck (`gh-300`, `ai-103` or `gh-600`)                 |
 
 The AI-103 question set was replaced, so its session moved to a new `-v2` key. The old `fieldnotes-study-session-ai-103` key is never deleted. When it exists, the AI-103 deck shows a notice that the previous session is still stored but the updated set starts fresh.
 
@@ -80,6 +82,7 @@ src/
     examDomains.ts           Exam domains, weights and question-to-domain mapping
     gh300Deck.ts             GH-300 questions and the shared Flashcard type
     ai103Deck.ts             AI-103 questions
+    gh600Deck.ts             GH-600 questions
 .github/
   instructions/              Frontend coding guidelines
   skills/npm-audit-fix/      Workflow for fixing npm audit findings
@@ -93,11 +96,13 @@ Every question text starts with a topic and question number, for example `T1Q15.
 
 - GH-300 uses topics `T1` to `T7`.
 - AI-103 uses topics `A1` to `A5`, one per exam domain.
+- GH-600 uses topics `G1` to `G6`, one per exam domain.
 
 Card IDs differ per deck:
 
 - GH-300: `gh300-001`, `gh300-002`, ... based on position in the list. Inserting or reordering questions changes the IDs and breaks saved progress for those cards.
 - AI-103: `ai103-<prefix>`, for example `ai103-A1Q1`, based on the question prefix.
+- GH-600: `gh600-<prefix>`, for example `gh600-G1Q1`.
 
 [`examDomains.ts`](src/features/study/examDomains.ts) defines each exam's domains, their weights and the date the weights were measured. A question belongs to a domain in one of two ways:
 

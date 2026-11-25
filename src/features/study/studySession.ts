@@ -12,7 +12,7 @@ export type SavedStudy = {
 export const STORAGE_KEY = "fieldnotes-study-session";
 
 export function getQuestionTopic(card: Flashcard): string | undefined {
-  return card.question.match(/^([TA]\d+)Q\d+\./)?.[1];
+  return card.question.match(/^([A-Z]\d+)Q\d+\./)?.[1];
 }
 
 export function isAnswerCorrect(

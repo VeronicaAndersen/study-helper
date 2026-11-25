@@ -17,7 +17,8 @@ import {
   getExamBlueprint,
   type ExamId,
 } from "./examDomains";
-import { flashcards as gh300Cards } from "./gh300Deck";
+import { flashcards as gh300Cards, type Flashcard } from "./gh300Deck";
+import { gh600Cards } from "./gh600Deck";
 import { QuizQuestion } from "./QuizQuestion";
 import {
   isAnswerCorrect,
@@ -31,6 +32,29 @@ import {
 const AI103_STORAGE_KEY = `${STORAGE_KEY}-ai-103-v2`;
 const LEGACY_AI103_STORAGE_KEY = `${STORAGE_KEY}-ai-103`;
 
+type DeckId = "gh-300" | "ai-103" | "gh-600";
+
+const decks: Record<
+  DeckId,
+  { examId: ExamId; cards: Flashcard[]; storageKey: string }
+> = {
+  "gh-300": { examId: "GH-300", cards: gh300Cards, storageKey: STORAGE_KEY },
+  "ai-103": {
+    examId: "AI-103",
+    cards: ai103Cards,
+    storageKey: AI103_STORAGE_KEY,
+  },
+  "gh-600": {
+    examId: "GH-600",
+    cards: gh600Cards,
+    storageKey: `${STORAGE_KEY}-gh-600`,
+  },
+};
+
+function isDeckId(value: string | null): value is DeckId {
+  return value !== null && value in decks;
+}
+
 function hasLegacyAI103Progress() {
   try {
     return localStorage.getItem(LEGACY_AI103_STORAGE_KEY) !== null;
@@ -40,21 +64,19 @@ function hasLegacyAI103Progress() {
 }
 
 export default function App() {
-  const [selectedDeckId, setSelectedDeckId] = useState<"gh-300" | "ai-103">(
-    () => {
-      try {
-        return localStorage.getItem("fieldnotes-selected-deck") === "ai-103"
-          ? "ai-103"
-          : "gh-300";
-      } catch {
-        return "gh-300";
-      }
-    },
-  );
-  const flashcards = selectedDeckId === "ai-103" ? ai103Cards : gh300Cards;
-  const studyStorageKey =
-    selectedDeckId === "ai-103" ? AI103_STORAGE_KEY : STORAGE_KEY;
-  const examLabel: ExamId = selectedDeckId === "ai-103" ? "AI-103" : "GH-300";
+  const [selectedDeckId, setSelectedDeckId] = useState<DeckId>(() => {
+    try {
+      const saved = localStorage.getItem("fieldnotes-selected-deck");
+      return isDeckId(saved) ? saved : "gh-300";
+    } catch {
+      return "gh-300";
+    }
+  });
+  const {
+    cards: flashcards,
+    storageKey: studyStorageKey,
+    examId: examLabel,
+  } = decks[selectedDeckId];
   const examBlueprint = getExamBlueprint(examLabel);
   const studyDomains = examBlueprint.domains;
   const [study, setStudy] = useState(() =>
@@ -63,9 +85,7 @@ export default function App() {
   const [hasPreviousAI103Progress, setHasPreviousAI103Progress] = useState(
     () => selectedDeckId === "ai-103" && hasLegacyAI103Progress(),
   );
-  const studyByDeck = useRef<Partial<Record<"gh-300" | "ai-103", SavedStudy>>>(
-    {},
-  );
+  const studyByDeck = useRef<Partial<Record<DeckId, SavedStudy>>>({});
   const { currentIndex, review, skipped, mode } = study;
   const [quizSelections, setQuizSelections] = useState<string[]>([]);
   const [isRevealed, setIsRevealed] = useState(false);
@@ -205,12 +225,10 @@ export default function App() {
     setIsRevealed(false);
   }
 
-  function changeDeck(nextDeckId: "gh-300" | "ai-103") {
+  function changeDeck(nextDeckId: DeckId) {
     if (nextDeckId === selectedDeckId) return;
     studyByDeck.current[selectedDeckId] = study;
-    const nextCards = nextDeckId === "ai-103" ? ai103Cards : gh300Cards;
-    const nextStorageKey =
-      nextDeckId === "ai-103" ? AI103_STORAGE_KEY : STORAGE_KEY;
+    const { cards: nextCards, storageKey: nextStorageKey } = decks[nextDeckId];
     const nextStudy =
       studyByDeck.current[nextDeckId] ??
       readSavedStudy(nextCards, nextStorageKey);
@@ -485,9 +503,7 @@ export default function App() {
             id="exam-deck"
             className="min-h-11 cursor-pointer rounded-lg border border-line bg-paper px-3 text-[12px] font-medium text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green"
             value={selectedDeckId}
-            onChange={(event) =>
-              changeDeck(event.target.value as "gh-300" | "ai-103")
-            }
+            onChange={(event) => changeDeck(event.target.value as DeckId)}
             onKeyDown={(event) => {
               if (event.key === "ArrowLeft" || event.key === "ArrowRight")
                 event.stopPropagation();
@@ -495,6 +511,7 @@ export default function App() {
           >
             <option value="gh-300">GH-300</option>
             <option value="ai-103">AI-103</option>
+            <option value="gh-600">GH-600</option>
           </select>
           <span className="flex items-center gap-[9px] font-mono text-[10px] tracking-[.8px] text-subtle max-[720px]:hidden">
             <span className="size-[7px] rounded-full bg-signal shadow-[0_0_0_3px_var(--color-green-soft)]" />{" "}
