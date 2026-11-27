@@ -9,6 +9,7 @@ import {
   RotateCcw,
   Sparkles,
 } from "lucide-react";
+import { ThemeToggle } from "../theme/ThemeToggle";
 import { CategoryProgress } from "./CategoryProgress";
 import { ai103Cards } from "./ai103Deck";
 import {
@@ -483,13 +484,13 @@ export default function App() {
 
   return (
     <main className="relative mx-auto min-h-screen max-w-[1320px] px-10 max-[960px]:px-6 max-[720px]:px-4">
-      <header className="sticky top-0 z-20 -mx-10 flex h-[64px] items-center justify-between border-b border-black/10 bg-[#f5f5f7]/80 px-10 backdrop-blur-xl backdrop-saturate-150 max-[960px]:-mx-6 max-[960px]:px-6 max-[720px]:-mx-4 max-[720px]:h-[56px] max-[720px]:px-4">
+      <header className="sticky top-0 z-20 -mx-10 flex h-[64px] items-center justify-between border-b border-black/10 bg-canvas/80 px-10 backdrop-blur-xl backdrop-saturate-150 max-[960px]:-mx-6 max-[960px]:px-6 max-[720px]:-mx-4 max-[720px]:h-[56px] max-[720px]:px-4">
         <a
           className="inline-flex items-center gap-[10px] text-[19px] font-bold tracking-[-.3px] text-ink no-underline"
           href="#study"
           aria-label="Fieldnotes home"
         >
-          <span className="brand-mark relative grid size-[25px] rotate-[-32deg] place-items-center rounded-full border-[1.5px] border-green bg-white">
+          <span className="brand-mark relative grid size-[25px] rotate-[-32deg] place-items-center rounded-full border-[1.5px] border-green bg-paper">
             <span />
           </span>
           <span>fieldnotes</span>
@@ -500,7 +501,7 @@ export default function App() {
           </label>
           <select
             id="exam-deck"
-            className="min-h-9 cursor-pointer rounded-full border-0 bg-black/5 px-4 font-medium hover:bg-black/10 text-[13px] font-medium text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green"
+            className="min-h-9 cursor-pointer rounded-full border-0 bg-hover px-4 text-[13px] font-medium text-ink hover:bg-track focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green"
             value={selectedDeckId}
             onChange={(event) => changeDeck(event.target.value as DeckId)}
             onKeyDown={(event) => {
@@ -512,12 +513,13 @@ export default function App() {
             <option value="ai-103">AI-103</option>
             <option value="gh-600">GH-600</option>
           </select>
-          <span className="flex items-center gap-[9px] font-mono text-[12px] tracking-[.04em] text-[#6e6e73] max-[720px]:hidden">
-            <span className="size-[7px] rounded-full bg-[#34c759] shadow-[0_0_0_3px_#d8f5df]" />{" "}
+          <span className="flex items-center gap-[9px] font-mono text-[12px] tracking-[.04em] text-subtle max-[720px]:hidden">
+            <span className="size-[7px] rounded-full bg-signal shadow-[0_0_0_3px_var(--color-green-soft)]" />{" "}
             STUDY SESSION
           </span>
+          <ThemeToggle />
           <button
-            className="grid size-9 cursor-pointer place-items-center rounded-full border-0 bg-black/5 text-ink transition-colors duration-200 hover:bg-black/10"
+            className="grid size-9 cursor-pointer place-items-center rounded-full border-0 bg-hover text-ink transition-colors duration-200 hover:bg-track"
             onClick={resetSession}
             aria-label="Reset study session"
             title="Reset session"
@@ -529,7 +531,7 @@ export default function App() {
 
       {selectedDeckId === "ai-103" && hasPreviousAI103Progress && (
         <p
-          className="mx-auto mt-4 max-w-[1100px] rounded-lg border border-[#ffe08a] bg-[#fff8e5] px-4 py-3 text-[13px] leading-relaxed text-ink"
+          className="mx-auto mt-4 max-w-[1100px] rounded-lg border border-warn-line bg-warn-soft px-4 py-3 text-[12px] leading-relaxed text-ink"
           role="status"
         >
           The AI-103 question set has changed. Your previous saved session
@@ -561,7 +563,7 @@ export default function App() {
           </p>
 
           <div className="mt-[60px] border-t border-line pt-[17px] max-[720px]:col-span-full max-[720px]:ml-0 max-[720px]:mt-4 max-[720px]:w-full max-[720px]:pt-3">
-            <div className="flex justify-between font-mono text-[11px] tracking-[.04em] text-[#6e6e73] max-[720px]:text-[11px]">
+            <div className="flex justify-between font-mono text-[11px] tracking-[.04em] text-subtle max-[720px]:text-[11px]">
               <span>SESSION PROGRESS</span>
               <span className="text-green">
                 {reviewedCount + skipped.length}
@@ -569,7 +571,7 @@ export default function App() {
               </span>
             </div>
             <div
-              className="mt-3 h-2 overflow-hidden rounded-full bg-[#e8e8ed]"
+              className="mt-3 h-2 overflow-hidden rounded-full bg-track"
               role="progressbar"
               aria-label="Session progress"
               aria-valuenow={Math.round(progress)}
@@ -583,7 +585,7 @@ export default function App() {
             </div>
             <div className="mt-4 flex flex-col gap-[9px] text-[13px] text-green-dark max-[720px]:mt-[10px] max-[720px]:flex-row max-[720px]:gap-4 max-[720px]:text-[12px] max-[380px]:gap-3 max-[380px]:text-[11px]">
               <span className="flex items-center gap-[7px] whitespace-nowrap max-[720px]:gap-1">
-                <Check className="text-[#34c759] max-[720px]:w-3" size={14} />{" "}
+                <Check className="text-signal max-[720px]:w-3" size={14} />{" "}
                 {learnedCount} learned
               </span>
               <button
@@ -616,7 +618,7 @@ export default function App() {
                     (card, index) =>
                       review[card.id] === "practice" && (
                         <button
-                          className="flex w-full cursor-pointer flex-col items-start gap-1 border-0 border-b border-line bg-transparent px-1 py-[10px] text-left last:border-b-0 hover:bg-[#f5f5f7] focus-visible:outline focus-visible:outline-2 focus-visible:outline-green"
+                          className="flex w-full cursor-pointer flex-col items-start gap-1 border-0 border-b border-line bg-transparent px-1 py-[10px] text-left last:border-b-0 hover:bg-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-green"
                           key={card.id}
                           type="button"
                           onClick={() => viewRevisitCard(index)}
@@ -636,7 +638,7 @@ export default function App() {
           </div>
 
           <div className="mt-[46px] flex items-center gap-[11px] border-t border-line pt-[18px] max-[720px]:hidden">
-            <div className="grid size-[31px] place-items-center bg-[#e8f1fd] text-green">
+            <div className="grid size-[31px] place-items-center bg-green-soft text-green">
               <Sparkles size={16} />
             </div>
             <div className="flex flex-1 flex-col gap-1">
@@ -656,7 +658,7 @@ export default function App() {
         <section className="min-w-0 w-full" aria-label="Flashcard study area">
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
             <div
-              className="flex w-fit gap-0.5 rounded-[10px] bg-[#7676801f] p-[2px]"
+              className="flex w-fit gap-0.5 rounded-[10px] bg-track p-[2px]"
               role="tablist"
               aria-label="Study mode"
             >
@@ -679,7 +681,7 @@ export default function App() {
             </div>
             {(isRevisitMode || quizCategory) && (
               <button
-                className="inline-flex min-h-11 cursor-pointer items-center gap-1 rounded-full border-0 bg-black/5 px-4 py-2 text-[13px] font-medium text-green hover:text-green-dark"
+                className="inline-flex min-h-11 cursor-pointer items-center gap-1 rounded-full border-0 bg-hover px-4 py-2 text-[13px] font-medium text-green hover:bg-track hover:text-green-dark"
                 type="button"
                 onClick={() => {
                   if (quizCategory && !isRevisitMode) {
@@ -705,8 +707,7 @@ export default function App() {
           <div className="mb-[19px] flex items-end justify-between max-[720px]:mb-[14px]">
             <div>
               <div className="font-mono text-[11px] tracking-[.04em] text-green-dark">
-                CERTIFICATION REVIEW{" "}
-                <span className="px-1 text-[#d2d2d7]">/</span>{" "}
+                CERTIFICATION REVIEW <span className="px-1 text-faint">/</span>{" "}
                 {activeCard.subject.toUpperCase()}
               </div>
               <h2
@@ -721,32 +722,32 @@ export default function App() {
                     : mode === "quiz"
                       ? "Quick quiz"
                       : "Quick study"}{" "}
-                <span className="text-[#86868b]">·</span>{" "}
-                <b className="text-[15px] font-normal text-green-dark">
+                <span className="text-faint">·</span>{" "}
+                <b className="text-[13px] font-normal text-green-dark">
                   {deckPosition + 1} of {studyDeck.length}
                 </b>
               </h2>
             </div>
             <div
-              className="flex items-baseline gap-[7px] font-mono text-[13px] text-[#86868b]"
+              className="flex items-baseline gap-[7px] font-mono text-[13px] text-faint"
               aria-label={`Card ${deckPosition + 1} of ${studyDeck.length}`}
             >
               <span className="text-[20px] text-green">
                 {String(deckPosition + 1).padStart(2, "0")}
               </span>
-              <span className="text-[#d2d2d7]">/</span>
+              <span className="text-faint">/</span>
               <span>{String(studyDeck.length).padStart(2, "0")}</span>
             </div>
           </div>
 
           {mode === "quiz" && !isQuizComplete && (
             <div className="mb-4" aria-label="Quiz progress">
-              <div className="mb-2 flex justify-between font-mono text-[11px] text-[#6e6e73]">
+              <div className="mb-2 flex justify-between font-mono text-[9px] text-subtle">
                 <span>{quizAttemptedCount} answered</span>
                 <span>{quizRemainingCount} remaining</span>
               </div>
               <div
-                className="h-2 overflow-hidden rounded-full bg-[#e8e8ed]"
+                className="h-2 overflow-hidden rounded-full bg-track"
                 role="progressbar"
                 aria-label="Quiz progress"
                 aria-valuenow={Math.round(
@@ -799,7 +800,7 @@ export default function App() {
               }
               aria-live="polite"
             >
-              <div className="flex items-center justify-between border-b border-[#e5e5ea] pb-[17px]">
+              <div className="flex items-center justify-between border-b border-line pb-[17px]">
                 <span className="font-mono text-[11px] tracking-[.04em] text-green">
                   {mode === "quiz"
                     ? "QUESTION"
@@ -807,7 +808,7 @@ export default function App() {
                       ? "THE ANSWER"
                       : "QUESTION"}
                 </span>
-                <span className="rounded-full bg-[#f5f5f7] px-3 py-[5px] text-[12px] font-medium text-muted">
+                <span className="rounded-full bg-sand px-3 py-[5px] text-[12px] font-medium text-muted">
                   {activeCard.subject}
                 </span>
               </div>
@@ -860,10 +861,10 @@ export default function App() {
                     <div className="flex flex-col gap-3">
                       {activeCard.answers.map((answer) => (
                         <div
-                          className="flex items-start gap-3 rounded-2xl border border-line bg-[#e9f8ee] p-4"
+                          className="flex items-start gap-3 rounded-2xl border border-line bg-green-soft p-4"
                           key={answer}
                         >
-                          <span className="choice-letter border-[#34c759] bg-[#34c759] text-white">
+                          <span className="choice-letter border-green bg-green text-on-accent">
                             {String.fromCharCode(
                               65 + activeCard.choices.indexOf(answer),
                             )}
@@ -875,7 +876,7 @@ export default function App() {
                       ))}
                     </div>
                     {activeCard.explanation && (
-                      <p className="m-0 max-w-[410px] text-[13px] leading-[1.65] text-[#6e6e73]">
+                      <p className="m-0 max-w-[410px] text-[12px] leading-[1.65] text-subtle">
                         {activeCard.explanation}
                       </p>
                     )}
@@ -902,12 +903,12 @@ export default function App() {
               )}
             </article>
             {mode === "flashcards" && dragOffset > 24 && (
-              <div className="pointer-events-none absolute right-[22px] top-[72px] z-[3] flex rotate-[8deg] items-center gap-[5px] rounded-full border-2 border-[#34c759] bg-white px-3 py-[6px] font-mono text-[12px] tracking-[.04em] text-[#34c759]">
+              <div className="pointer-events-none absolute right-[22px] top-[72px] z-[3] flex rotate-[8deg] items-center gap-[5px] rounded-full border-2 border-signal bg-paper px-3 py-[6px] font-mono text-[12px] tracking-[.04em] text-signal">
                 GOT IT <Check size={16} />
               </div>
             )}
             {mode === "flashcards" && dragOffset < -24 && (
-              <div className="pointer-events-none absolute left-[22px] top-[72px] z-[3] flex -rotate-[8deg] items-center gap-[5px] rounded-full border-2 border-coral bg-white px-3 py-[6px] font-mono text-[12px] tracking-[.04em] text-coral">
+              <div className="pointer-events-none absolute left-[22px] top-[72px] z-[3] flex -rotate-[8deg] items-center gap-[5px] rounded-full border-2 border-coral bg-paper px-3 py-[6px] font-mono text-[12px] tracking-[.04em] text-coral">
                 REVISIT <RotateCcw size={14} />
               </div>
             )}
@@ -918,7 +919,7 @@ export default function App() {
               className="mt-4 flex min-h-[300px] flex-col items-center justify-center rounded-[22px] border border-line bg-paper px-6 py-10 text-center shadow-[0_2px_12px_#0000000a,0_12px_40px_#0000000f]"
               aria-live="polite"
             >
-              <span className="grid size-[42px] place-items-center rounded-full bg-[#e3f7e8] text-[#34c759]">
+              <span className="grid size-[42px] place-items-center rounded-full bg-green-soft text-green">
                 <Check size={23} />
               </span>
               <h3 className="mb-1 mt-4 font-display text-[27px] font-semibold">
@@ -958,7 +959,7 @@ export default function App() {
             <>
               <div className="mt-[25px] flex items-center justify-center gap-[15px] max-[720px]:mt-[22px] max-[720px]:gap-2">
                 <button
-                  className="flex min-h-12 flex-1 cursor-pointer items-center justify-center gap-2 rounded-full border-0 bg-white px-4 text-[15px] font-medium text-coral shadow-[0_1px_3px_#00000014] transition-colors hover:bg-[#fff0ef]"
+                  className="flex min-h-12 flex-1 cursor-pointer items-center justify-center gap-2 rounded-full border-0 bg-paper px-4 text-[15px] font-medium text-coral shadow-[0_1px_3px_#00000014] transition-colors hover:bg-coral-soft"
                   onClick={() => moveCard("practice")}
                 >
                   <RotateCcw size={16} />
@@ -1003,7 +1004,7 @@ export default function App() {
                   <ArrowRight size={15} />
                 </button>
                 <button
-                  className="min-h-11 cursor-pointer rounded-lg border-0 bg-transparent px-4 text-[15px] text-muted hover:bg-[#e8e8ed] disabled:cursor-default disabled:opacity-50"
+                  className="min-h-11 cursor-pointer rounded-lg border-0 bg-transparent px-4 text-[13px] text-muted hover:bg-track disabled:cursor-default disabled:opacity-50"
                   disabled={quizSubmitted}
                   onClick={skipQuizQuestion}
                 >

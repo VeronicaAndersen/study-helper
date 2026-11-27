@@ -24,10 +24,10 @@ export function QuizQuestion({
     (choice) => !card.answers.includes(choice),
   );
   const feedbackTone = answerCorrect
-    ? "border-[#34c759] bg-[#e9f8ee] text-success"
+    ? "border-green-line bg-green-soft text-success"
     : hasIncorrectChoice || card.answers.length === 1
-      ? "border-coral bg-[#fff0ef] text-[#d70015]"
-      : "border-[#d2d2d7] bg-[#f5f5f7] text-[#6e6e73]";
+      ? "border-coral bg-coral-soft text-coral-dark"
+      : "border-sand-line bg-sand text-subtle";
 
   return (
     <div className="flex flex-1 flex-col">
@@ -41,7 +41,7 @@ export function QuizQuestion({
             : "Select one answer"}
         </span>
         {card.answers.length > 1 && (
-          <span className="rounded-full bg-[#e8e8ed] px-2.5 py-1 font-mono text-[12px]">
+          <span className="rounded-full bg-track px-2.5 py-1 font-mono text-[12px]">
             {selections.length} selected
           </span>
         )}
@@ -56,27 +56,27 @@ export function QuizQuestion({
           const isCorrectChoice = card.answers.includes(choice);
           const choiceClass = !submitted
             ? isSelected
-              ? "border-[#0071e3] bg-[#f5f5f7] hover:bg-[#f5f5f7]"
+              ? "border-green-line bg-sand hover:bg-sand"
               : ""
             : isSelected
               ? isCorrectChoice
-                ? "border-[#a6e3b4] bg-[#e9f8ee] text-success hover:border-[#a6e3b4] hover:bg-[#e9f8ee]"
-                : "border-[#ffc1bd] bg-[#fff0ef] text-[#d70015] hover:border-[#ffc1bd] hover:bg-[#fff0ef]"
+                ? "border-green-line bg-green-soft text-green-dark hover:border-green-line hover:bg-green-soft"
+                : "border-coral-line bg-coral-soft text-coral-dark hover:border-coral-line hover:bg-coral-soft"
               : isCorrectChoice
-                ? "border-[#a6e3b4] bg-[#e9f8ee] text-success hover:border-[#a6e3b4] hover:bg-[#e9f8ee]"
+                ? "border-green-line bg-green-soft text-green-dark hover:border-green-line hover:bg-green-soft"
                 : "";
           const letterClass = !submitted
             ? isSelected
-              ? "border-[#6e6e73] bg-[#6e6e73] text-white"
+              ? "border-muted bg-muted text-on-accent"
               : ""
             : isCorrectChoice
-              ? "border-[#34c759] bg-[#34c759] text-white"
+              ? "border-green bg-green text-on-accent"
               : isSelected
-                ? "border-coral bg-coral text-white"
+                ? "border-coral bg-coral text-on-accent"
                 : "";
           return (
             <button
-              className={`answer-choice cursor-pointer pr-10 transition-[border-color,background] duration-[160ms] hover:border-[#0071e3] hover:bg-[#f5f5f7] disabled:cursor-default ${choiceClass}`}
+              className={`answer-choice cursor-pointer pr-10 transition-[border-color,background] duration-[160ms] hover:border-green-line hover:bg-hover disabled:cursor-default ${choiceClass}`}
               key={choice}
               onClick={() => onSelectChoice(choice)}
               disabled={submitted}
@@ -118,7 +118,7 @@ export function QuizQuestion({
             <span>Correct answer: {card.answers.join(", ")}</span>
           )}
           {card.explanation && (
-            <span className="text-[#6e6e73]">{card.explanation}</span>
+            <span className="text-subtle">{card.explanation}</span>
           )}
         </div>
       )}
