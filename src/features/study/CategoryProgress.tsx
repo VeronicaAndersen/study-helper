@@ -92,25 +92,25 @@ export function CategoryProgress({
 
   return (
     <section
-      className="mx-auto mb-10 max-w-[1100px] rounded-2xl border border-line bg-paper p-6 shadow-[0_4px_24px_#18252f04] max-[720px]:p-4"
+      className="mx-auto mb-10 max-w-[1100px] rounded-[22px] border border-line bg-paper p-6 shadow-[0_4px_24px_#0000000a] max-[720px]:p-4"
       aria-labelledby="category-progress-heading"
     >
       <div className="mb-5">
         <h2
           id="category-progress-heading"
-          className="text-[18px] font-semibold tracking-[-.3px]"
+          className="text-[22px] font-bold tracking-[-0.02em]"
         >
           Progress by exam domain
         </h2>
-        <p className="mt-1 text-[13px] text-muted">
+        <p className="mt-1 text-[15px] text-muted">
           Exam-domain weights measured as of {measuredAsOf}.
         </p>
-        <p className="mt-2 text-[12px] text-muted min-[721px]:hidden">
+        <p className="mt-2 text-[13px] text-muted min-[721px]:hidden">
           Swipe the table to see all domains and quiz actions.
         </p>
       </div>
       <div
-        className="overflow-x-auto rounded-xl border border-line"
+        className="overflow-x-auto rounded-2xl border border-line"
         role="region"
         aria-label="Exam-domain progress table"
         tabIndex={0}
@@ -119,13 +119,13 @@ export function CategoryProgress({
             event.stopPropagation();
         }}
       >
-        <table className="w-full min-w-[980px] border-collapse text-right text-[13px] tabular-nums">
+        <table className="w-full min-w-[980px] border-collapse text-right text-[15px] tabular-nums">
           <caption className="sr-only">
             Study progress by exam domain. Overlapping topic mappings can count
             a question in more than one domain. Reviewed includes learned and
             revisit cards; skipped is tracked separately.
           </caption>
-          <thead className="border-b border-line bg-[#f6f8fa] text-green-dark">
+          <thead className="border-b border-line bg-[#f5f5f7] text-muted">
             <tr>
               <th
                 scope="col"
@@ -196,7 +196,7 @@ export function CategoryProgress({
                 return (
                   <tr
                     key={domain.id}
-                    className="border-b border-line last:border-b-0 hover:bg-[#fafcfd]"
+                    className="border-b border-line last:border-b-0 hover:bg-[#f5f5f7]"
                   >
                     <th scope="row" className="px-2 py-3 text-left font-medium">
                       {domain.name}
@@ -211,11 +211,11 @@ export function CategoryProgress({
                       const metricLabel = metricLabels[metric];
                       return (
                         <td
-                          className={`px-2 py-3 ${metric === "learned" ? "text-green-dark" : metric === "revisit" ? "text-[#a55847]" : metric === "unseen" ? "text-muted" : ""}`}
+                          className={`px-2 py-3 ${metric === "learned" ? "text-success" : metric === "revisit" ? "text-[#d70015]" : metric === "unseen" ? "text-muted" : ""}`}
                           key={metric}
                         >
                           <button
-                            className={`min-h-11 min-w-11 cursor-pointer rounded-lg border-0 px-2 text-inherit transition-colors hover:bg-[#edf5f3] hover:text-green-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green ${isSelected ? "bg-[#e7f2ef] font-semibold text-green-dark" : "bg-transparent"}`}
+                            className={`min-h-11 min-w-11 cursor-pointer rounded-lg border-0 px-2 text-inherit transition-colors hover:bg-[#e8f1fd] hover:text-green-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green ${isSelected ? "bg-[#e8f1fd] font-semibold text-green-dark" : "bg-transparent"}`}
                             type="button"
                             aria-label={`View ${count} ${metricLabel} question${count === 1 ? "" : "s"} in ${domain.name}`}
                             aria-expanded={isSelected}
@@ -236,7 +236,7 @@ export function CategoryProgress({
                     })}
                     <td className="px-2 py-3 text-left">
                       <button
-                        className="min-h-11 cursor-pointer whitespace-nowrap rounded-lg border border-line bg-white px-3 text-[12px] font-medium text-green-dark hover:border-green focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green disabled:cursor-not-allowed disabled:text-muted"
+                        className="min-h-11 cursor-pointer whitespace-nowrap rounded-full border-0 bg-[#e8f1fd] px-4 text-[13px] font-semibold text-green hover:bg-[#d6e8fc] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green disabled:cursor-not-allowed disabled:text-muted"
                         type="button"
                         disabled={total === 0}
                         onClick={() => onStartQuiz(domain.id)}
@@ -255,7 +255,7 @@ export function CategoryProgress({
       {selectedProgress && (
         <div
           id="category-question-list"
-          className="mt-5 rounded-xl border border-line p-4"
+          className="mt-5 rounded-2xl border border-line p-4"
           aria-labelledby="category-question-heading"
         >
           <h3
@@ -266,7 +266,7 @@ export function CategoryProgress({
             questions
           </h3>
           {selectedQuestions.length === 0 ? (
-            <p className="my-2 text-[11px] text-muted">
+            <p className="my-2 text-[13px] text-muted">
               No questions match this progress count yet.
             </p>
           ) : (
@@ -277,7 +277,7 @@ export function CategoryProgress({
                   key={card.id}
                 >
                   <button
-                    className="min-h-12 w-full cursor-pointer rounded-lg border-0 bg-transparent px-3 py-3 text-left text-[14px] leading-relaxed text-ink hover:bg-[#f6f8fa] focus-visible:outline focus-visible:outline-2 focus-visible:outline-green"
+                    className="min-h-12 w-full cursor-pointer rounded-lg border-0 bg-transparent px-3 py-3 text-left text-[14px] leading-relaxed text-ink hover:bg-[#f5f5f7] focus-visible:outline focus-visible:outline-2 focus-visible:outline-green"
                     type="button"
                     onClick={() => onViewCard(index)}
                   >
